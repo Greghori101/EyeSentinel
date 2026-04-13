@@ -1,0 +1,182 @@
+[
+  {
+    "user_id": "TBNYZTFG",
+    "first_name": "Shirley",
+    "last_name": "Allen",
+    "birth_year": 1994,
+    "job": "Ride-share Driver",
+    "residence": {
+      "city": "Gillingham",
+      "lat": "51.3850",
+      "lng": "0.5500"
+    }
+  },
+  {
+    "user_id": "AEINJCDS",
+    "first_name": "Geneviève",
+    "last_name": "Bernier",
+    "birth_year": 1995,
+    "job": "Ride-share Driver",
+    "residence": {
+      "city": "Paris",
+      "lat": "48.8567",
+      "lng": "2.3522"
+    }
+  },
+  {
+    "user_id": "VHQALREJ",
+    "first_name": "Alessia",
+    "last_name": "Tron",
+    "birth_year": 1942,
+    "job": "Retired",
+    "residence": {
+      "city": "Venice",
+      "lat": "45.4397",
+      "lng": "12.3319"
+    }
+  },
+  {
+    "user_id": "RLREEIPQ",
+    "first_name": "Bethan",
+    "last_name": "Owens",
+    "birth_year": 1989,
+    "job": "Digital Creator",
+    "residence": {
+      "city": "Wellington",
+      "lat": "52.7001",
+      "lng": "-2.5157"
+    }
+  },
+  {
+    "user_id": "TRMTUVVG",
+    "first_name": "Graeme",
+    "last_name": "Long",
+    "birth_year": 1940,
+    "job": "Retired",
+    "residence": {
+      "city": "Guiseley",
+      "lat": "53.8750",
+      "lng": "-1.7060"
+    }
+  },
+  {
+    "user_id": "KZCGTADH",
+    "first_name": "Sharon",
+    "last_name": "Thorpe",
+    "birth_year": 1991,
+    "job": "Delivery Worker",
+    "residence": {
+      "city": "Marple",
+      "lat": "53.3970",
+      "lng": "-2.0610"
+    }
+  },
+  {
+    "user_id": "DEVVTQZT",
+    "first_name": "Molly",
+    "last_name": "Skinner",
+    "birth_year": 1992,
+    "job": "Administrative Assistant",
+    "residence": {
+      "city": "Manchester",
+      "lat": "53.4790",
+      "lng": "-2.2452"
+    }
+  },
+  {
+    "user_id": "XFLYLZTW",
+    "first_name": "Patrizia",
+    "last_name": "Matthäi",
+    "birth_year": 2005,
+    "job": "Student",
+    "residence": {
+      "city": "Kirkel",
+      "lat": "49.2833",
+      "lng": "7.2333"
+    }
+  },
+  {
+    "user_id": "HICNSNAE",
+    "first_name": "Giacinto",
+    "last_name": "Iannuzzi",
+    "birth_year": 1993,
+    "job": "Office Clerk",
+    "residence": {
+      "city": "Marina di Carrara",
+      "lat": "44.0381",
+      "lng": "10.0456"
+    }
+  },
+  {
+    "user_id": "YHCZPPBM",
+    "first_name": "Maria",
+    "last_name": "Lambert",
+    "birth_year": 1948,
+    "job": "Retired",
+    "residence": {
+      "city": "Middlesbrough",
+      "lat": "54.5767",
+      "lng": "-1.2355"
+    }
+  },
+  {
+    "user_id": "NCHTJSGF",
+    "first_name": "Brian",
+    "last_name": "Anderson",
+    "birth_year": 1947,
+    "job": "Retired",
+    "residence": {
+      "city": "Scranton",
+      "lat": "41.4044",
+      "lng": "-75.6649"
+    }
+  },
+  {
+    "user_id": "ZXHLLYUF",
+    "first_name": "Philip",
+    "last_name": "Begum",
+    "birth_year": 1990,
+    "job": "Office Clerk",
+    "residence": {
+      "city": "London",
+      "lat": "51.5072",
+      "lng": "-0.1275"
+    }
+  },
+  {
+    "user_id": "DEVCZEKE",
+    "first_name": "Kira",
+    "last_name": "Schwital",
+    "birth_year": 1991,
+    "job": "Administrative Assistant",
+    "residence": {
+      "city": "Frankfurt",
+      "lat": "50.1106",
+      "lng": "8.6822"
+    }
+  },
+  {
+    "user_id": "RDTGRBAM",
+    "first_name": "Evangelista",
+    "last_name": "Platini",
+    "birth_year": 1975,
+    "job": "CEO",
+    "residence": {
+      "city": "Parma",
+      "lat": "44.8015",
+      "lng": "10.3280"
+    }
+  },
+  {
+    "user_id": "OTGBYUEX",
+    "first_name": "Daniele",
+    "last_name": "Borzomì",
+    "birth_year": 1976,
+    "job": "Retail Entrepreneur",
+    "residence": {
+      "city": "Palermo",
+      "lat": "38.1157",
+      "lng": "13.3613"
+    }
+  }
+]

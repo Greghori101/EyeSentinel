@@ -1,0 +1,201 @@
+EventID,CitizenID,EventType,PhysicalActivityIndex,SleepQualityIndex,EnvironmentalExposureLevel,Timestamp
+1,TBNYZTFG,routine check-up,43,50,50,2026-01-05T16:57:46
+2,TBNYZTFG,preventive screening,44,47,63,2026-01-22T11:18:48
+3,TBNYZTFG,lifestyle coaching session,41,57,56,2026-02-19T07:14:39
+4,TBNYZTFG,routine check-up,47,49,61,2026-03-13T06:43:19
+5,TBNYZTFG,preventive screening,43,50,59,2026-04-18T14:44:39
+6,TBNYZTFG,lifestyle coaching session,47,55,58,2026-05-12T22:38:36
+7,TBNYZTFG,routine check-up,42,49,54,2026-06-11T06:51:33
+8,TBNYZTFG,preventive screening,47,53,63,2026-06-27T11:45:53
+9,TBNYZTFG,lifestyle coaching session,44,52,63,2026-07-20T20:23:38
+10,TBNYZTFG,routine check-up,47,47,62,2026-08-23T08:52:26
+11,TBNYZTFG,preventive screening,48,53,56,2026-09-11T23:04:39
+12,TBNYZTFG,lifestyle coaching session,43,53,59,2026-10-21T09:20:24
+13,TBNYZTFG,routine check-up,47,54,49,2026-11-04T03:34:56
+14,TBNYZTFG,preventive screening,40,48,50,2026-12-06T04:43:35
+15,AEINJCDS,routine check-up,43,45,57,2026-01-01T00:00:00
+16,AEINJCDS,preventive screening,47,53,52,2026-01-27T07:35:50
+17,AEINJCDS,lifestyle coaching session,48,47,55,2026-02-19T03:08:35
+18,AEINJCDS,routine check-up,39,51,47,2026-03-25T08:12:21
+19,AEINJCDS,preventive screening,44,50,52,2026-04-09T08:53:56
+20,AEINJCDS,lifestyle coaching session,45,47,58,2026-05-14T20:08:38
+21,AEINJCDS,routine check-up,45,44,59,2026-06-12T09:19:57
+22,AEINJCDS,preventive screening,46,52,49,2026-06-27T21:03:42
+23,AEINJCDS,lifestyle coaching session,42,55,59,2026-07-23T00:07:38
+24,AEINJCDS,routine check-up,40,46,60,2026-08-27T04:30:16
+25,AEINJCDS,preventive screening,41,46,62,2026-09-13T06:05:17
+26,AEINJCDS,lifestyle coaching session,44,46,65,2026-10-18T00:32:22
+27,AEINJCDS,routine check-up,39,46,49,2026-11-09T13:40:23
+28,AEINJCDS,preventive screening,47,47,56,2026-12-13T17:58:19
+29,VHQALREJ,routine check-up,36,50,32,2026-01-01T00:00:00
+30,VHQALREJ,preventive screening,28,46,33,2026-02-02T04:29:20
+31,VHQALREJ,lifestyle coaching session,34,48,33,2026-02-26T03:11:48
+32,VHQALREJ,routine check-up,27,54,26,2026-03-15T04:01:35
+33,VHQALREJ,preventive screening,37,50,32,2026-04-21T20:06:10
+34,VHQALREJ,lifestyle coaching session,38,45,33,2026-05-18T00:05:45
+35,VHQALREJ,routine check-up,37,55,27,2026-06-09T20:14:06
+36,VHQALREJ,preventive screening,39,52,28,2026-07-02T13:49:55
+37,VHQALREJ,lifestyle coaching session,39,48,33,2026-08-03T05:21:42
+38,VHQALREJ,routine check-up,34,50,30,2026-08-18T04:36:06
+39,VHQALREJ,preventive screening,39,49,32,2026-09-21T16:47:08
+40,VHQALREJ,lifestyle coaching session,37,46,33,2026-10-11T05:46:16
+41,VHQALREJ,routine check-up,40,52,31,2026-11-09T12:18:02
+42,VHQALREJ,preventive screening,31,55,23,2026-12-07T22:57:47
+43,RLREEIPQ,routine check-up,59,74,26,2026-01-01T00:00:00
+44,RLREEIPQ,preventive screening,60,72,27,2026-03-20T15:21:02
+45,RLREEIPQ,lifestyle coaching session,59,64,37,2026-04-30T12:23:29
+46,RLREEIPQ,routine check-up,56,53,34,2026-06-01T14:55:35
+47,RLREEIPQ,preventive screening,53,55,34,2026-06-30T20:26:09
+48,RLREEIPQ,lifestyle coaching session,47,54,35,2026-07-25T16:48:46
+49,RLREEIPQ,specialist consultation,48,57,39,2026-08-18T16:18:59
+50,RLREEIPQ,preventive screening,42,44,46,2026-09-09T23:47:29
+51,RLREEIPQ,specialist consultation,39,27,48,2026-09-30T22:01:36
+52,RLREEIPQ,routine check-up,44,51,51,2026-10-21T01:17:31
+53,RLREEIPQ,preventive screening,36,43,54,2026-11-09T11:46:05
+54,RLREEIPQ,lifestyle coaching session,29,64,57,2026-11-12T11:46:05
+55,RLREEIPQ,follow-up assessment,26,29,63,2026-11-13T11:46:05
+56,RLREEIPQ,follow-up assessment,24,15,59,2026-11-18T11:46:05
+57,TRMTUVVG,routine check-up,28,58,29,2026-01-07T05:56:37
+58,TRMTUVVG,preventive screening,37,48,24,2026-01-26T20:02:39
+59,TRMTUVVG,lifestyle coaching session,32,56,29,2026-03-01T04:50:07
+60,TRMTUVVG,routine check-up,40,45,27,2026-03-13T16:10:18
+61,TRMTUVVG,preventive screening,33,47,29,2026-04-15T19:16:22
+62,TRMTUVVG,lifestyle coaching session,34,47,30,2026-05-16T12:32:11
+63,TRMTUVVG,routine check-up,41,53,29,2026-05-29T20:51:11
+64,TRMTUVVG,preventive screening,40,49,33,2026-07-06T01:25:17
+65,TRMTUVVG,lifestyle coaching session,34,44,35,2026-07-31T18:29:38
+66,TRMTUVVG,routine check-up,31,47,26,2026-08-28T06:21:43
+67,TRMTUVVG,preventive screening,38,56,30,2026-09-22T06:46:33
+68,TRMTUVVG,lifestyle coaching session,37,48,29,2026-10-20T21:30:05
+69,TRMTUVVG,routine check-up,45,48,23,2026-11-10T01:58:40
+70,TRMTUVVG,preventive screening,30,53,24,2026-12-08T07:49:50
+71,KZCGTADH,routine check-up,52,61,44,2026-01-01T06:04:11
+72,KZCGTADH,preventive screening,47,52,47,2026-03-24T08:18:09
+73,KZCGTADH,lifestyle coaching session,48,48,57,2026-05-05T06:55:42
+74,KZCGTADH,routine check-up,51,62,56,2026-06-09T05:03:51
+75,KZCGTADH,follow-up assessment,39,49,65,2026-07-09T17:48:56
+76,KZCGTADH,lifestyle coaching session,39,31,56,2026-08-04T08:44:55
+77,KZCGTADH,follow-up assessment,42,32,65,2026-08-29T10:47:54
+78,KZCGTADH,preventive screening,36,28,69,2026-09-22T21:33:30
+79,KZCGTADH,specialist consultation,31,47,75,2026-10-14T05:25:43
+80,KZCGTADH,specialist consultation,25,29,79,2026-11-03T07:12:03
+81,KZCGTADH,emergency visit,27,27,85,2026-11-04T07:12:03
+82,KZCGTADH,specialist consultation,24,23,87,2026-11-06T07:12:03
+83,KZCGTADH,follow-up assessment,24,12,95,2026-11-11T07:12:03
+84,DEVVTQZT,routine check-up,36,50,41,2026-01-01T00:00:00
+85,DEVVTQZT,preventive screening,39,53,39,2026-01-22T18:00:58
+86,DEVVTQZT,lifestyle coaching session,49,65,36,2026-03-04T09:47:37
+87,DEVVTQZT,routine check-up,43,62,46,2026-03-20T23:03:40
+88,DEVVTQZT,preventive screening,48,57,42,2026-04-24T00:14:32
+89,DEVVTQZT,lifestyle coaching session,54,63,39,2026-05-28T21:27:16
+90,DEVVTQZT,routine check-up,49,50,40,2026-06-25T18:21:20
+91,DEVVTQZT,preventive screening,43,58,37,2026-07-21T20:31:41
+92,DEVVTQZT,lifestyle coaching session,45,60,37,2026-08-09T16:15:02
+93,DEVVTQZT,routine check-up,39,53,39,2026-09-04T23:01:59
+94,DEVVTQZT,preventive screening,43,64,42,2026-10-04T19:38:54
+95,DEVVTQZT,lifestyle coaching session,44,64,41,2026-11-03T13:43:56
+96,DEVVTQZT,routine check-up,43,54,32,2026-12-02T15:35:54
+97,XFLYLZTW,routine check-up,67,50,36,2026-01-08T17:00:26
+98,XFLYLZTW,preventive screening,56,69,35,2026-01-30T03:09:56
+99,XFLYLZTW,lifestyle coaching session,64,52,26,2026-02-24T04:44:56
+100,XFLYLZTW,routine check-up,57,52,39,2026-03-21T11:42:08
+101,XFLYLZTW,preventive screening,56,61,36,2026-04-22T21:22:16
+102,XFLYLZTW,lifestyle coaching session,61,45,32,2026-05-22T11:02:36
+103,XFLYLZTW,routine check-up,67,60,35,2026-06-23T23:40:30
+104,XFLYLZTW,preventive screening,55,58,36,2026-07-08T04:55:36
+105,XFLYLZTW,lifestyle coaching session,60,59,32,2026-08-17T16:50:51
+106,XFLYLZTW,routine check-up,52,54,32,2026-09-14T04:18:10
+107,XFLYLZTW,preventive screening,68,61,34,2026-10-11T22:50:38
+108,XFLYLZTW,lifestyle coaching session,59,60,40,2026-11-08T00:10:32
+109,XFLYLZTW,routine check-up,57,54,39,2026-12-05T07:17:45
+110,HICNSNAE,routine check-up,56,72,34,2026-01-01T00:00:00
+111,HICNSNAE,preventive screening,52,66,37,2026-03-24T16:47:14
+112,HICNSNAE,lifestyle coaching session,52,53,38,2026-05-06T04:28:55
+113,HICNSNAE,routine check-up,50,62,41,2026-06-09T05:43:43
+114,HICNSNAE,preventive screening,44,61,44,2026-07-07T20:35:03
+115,HICNSNAE,emergency visit,38,54,40,2026-08-03T23:15:53
+116,HICNSNAE,specialist consultation,34,40,46,2026-08-29T20:09:01
+117,HICNSNAE,follow-up assessment,29,53,59,2026-09-21T07:34:09
+118,HICNSNAE,lifestyle coaching session,31,38,55,2026-10-14T04:53:34
+119,HICNSNAE,specialist consultation,30,22,56,2026-11-03T06:21:45
+120,HICNSNAE,specialist consultation,24,36,60,2026-11-11T06:21:45
+121,HICNSNAE,lifestyle coaching session,16,43,68,2026-11-12T06:21:45
+122,HICNSNAE,emergency visit,20,12,65,2026-11-12T06:21:45
+123,YHCZPPBM,routine check-up,36,55,25,2026-01-01T00:00:00
+124,YHCZPPBM,preventive screening,34,55,27,2026-01-20T19:23:29
+125,YHCZPPBM,lifestyle coaching session,37,50,20,2026-02-17T21:44:48
+126,YHCZPPBM,routine check-up,35,45,24,2026-03-22T03:54:01
+127,YHCZPPBM,preventive screening,34,50,30,2026-04-17T01:09:33
+128,YHCZPPBM,lifestyle coaching session,36,48,29,2026-05-28T18:45:07
+129,YHCZPPBM,routine check-up,30,55,27,2026-06-24T10:47:46
+130,YHCZPPBM,preventive screening,34,50,24,2026-07-15T00:03:17
+131,YHCZPPBM,lifestyle coaching session,34,52,31,2026-08-15T07:04:56
+132,YHCZPPBM,routine check-up,29,54,29,2026-09-19T02:27:23
+133,YHCZPPBM,preventive screening,37,55,35,2026-10-11T21:36:17
+134,YHCZPPBM,lifestyle coaching session,36,49,34,2026-11-14T05:28:53
+135,YHCZPPBM,routine check-up,31,56,30,2026-11-28T13:55:11
+136,NCHTJSGF,routine check-up,33,48,32,2026-01-01T00:00:00
+137,NCHTJSGF,preventive screening,33,46,30,2026-02-02T16:43:39
+138,NCHTJSGF,lifestyle coaching session,31,55,33,2026-02-22T00:00:02
+139,NCHTJSGF,routine check-up,37,47,30,2026-03-21T15:27:10
+140,NCHTJSGF,preventive screening,39,41,30,2026-04-15T14:09:45
+141,NCHTJSGF,lifestyle coaching session,40,57,26,2026-05-24T17:38:44
+142,NCHTJSGF,routine check-up,36,54,34,2026-06-22T12:52:34
+143,NCHTJSGF,preventive screening,27,41,30,2026-07-10T22:22:55
+144,NCHTJSGF,lifestyle coaching session,36,49,28,2026-08-06T21:53:38
+145,NCHTJSGF,routine check-up,40,55,27,2026-09-07T23:32:00
+146,NCHTJSGF,preventive screening,35,45,36,2026-10-11T03:26:04
+147,NCHTJSGF,lifestyle coaching session,29,45,26,2026-11-11T19:25:48
+148,NCHTJSGF,routine check-up,30,55,39,2026-12-09T13:44:07
+149,ZXHLLYUF,routine check-up,45,64,41,2026-01-01T00:00:00
+150,ZXHLLYUF,preventive screening,54,68,37,2026-01-22T18:04:02
+151,ZXHLLYUF,lifestyle coaching session,48,57,51,2026-02-27T17:22:08
+152,ZXHLLYUF,routine check-up,48,59,35,2026-03-30T11:20:13
+153,ZXHLLYUF,preventive screening,41,61,42,2026-04-26T18:13:05
+154,ZXHLLYUF,lifestyle coaching session,39,63,42,2026-05-18T05:09:50
+155,ZXHLLYUF,routine check-up,50,63,38,2026-06-24T09:32:38
+156,ZXHLLYUF,preventive screening,41,60,43,2026-07-19T14:35:47
+157,ZXHLLYUF,lifestyle coaching session,46,74,45,2026-08-16T10:11:39
+158,ZXHLLYUF,routine check-up,45,62,43,2026-09-09T01:05:24
+159,ZXHLLYUF,preventive screening,40,57,44,2026-09-30T16:45:23
+160,ZXHLLYUF,lifestyle coaching session,44,64,44,2026-11-07T19:32:45
+161,ZXHLLYUF,routine check-up,48,67,35,2026-12-01T11:41:10
+162,DEVCZEKE,routine check-up,40,57,38,2026-01-01T00:00:00
+163,DEVCZEKE,preventive screening,42,54,35,2026-02-04T21:07:26
+164,DEVCZEKE,lifestyle coaching session,52,51,39,2026-02-19T10:43:24
+165,DEVCZEKE,routine check-up,44,60,36,2026-03-27T03:35:35
+166,DEVCZEKE,preventive screening,48,63,40,2026-05-01T15:37:20
+167,DEVCZEKE,lifestyle coaching session,41,54,33,2026-05-21T01:00:31
+168,DEVCZEKE,routine check-up,42,62,42,2026-06-22T22:12:23
+169,DEVCZEKE,preventive screening,39,58,39,2026-07-08T21:49:35
+170,DEVCZEKE,lifestyle coaching session,38,64,35,2026-08-12T09:23:29
+171,DEVCZEKE,routine check-up,45,53,36,2026-09-12T14:34:02
+172,DEVCZEKE,preventive screening,52,55,39,2026-10-06T21:28:16
+173,DEVCZEKE,lifestyle coaching session,48,61,35,2026-11-12T06:57:41
+174,DEVCZEKE,routine check-up,46,62,36,2026-12-08T15:59:27
+175,RDTGRBAM,routine check-up,71,59,42,2026-01-05T11:42:11
+176,RDTGRBAM,preventive screening,74,57,47,2026-02-06T02:50:08
+177,RDTGRBAM,lifestyle coaching session,60,50,48,2026-03-02T15:56:57
+178,RDTGRBAM,routine check-up,58,52,42,2026-03-24T21:38:27
+179,RDTGRBAM,preventive screening,68,54,47,2026-04-25T20:31:38
+180,RDTGRBAM,lifestyle coaching session,65,49,46,2026-05-28T00:48:26
+181,RDTGRBAM,routine check-up,62,56,47,2026-06-18T23:23:00
+182,RDTGRBAM,preventive screening,59,60,43,2026-07-24T10:59:55
+183,RDTGRBAM,lifestyle coaching session,58,56,42,2026-08-22T00:26:49
+184,RDTGRBAM,routine check-up,58,49,41,2026-09-03T20:41:32
+185,RDTGRBAM,preventive screening,65,51,44,2026-10-04T22:01:53
+186,RDTGRBAM,lifestyle coaching session,65,55,42,2026-11-08T12:53:04
+187,RDTGRBAM,routine check-up,62,59,51,2026-11-27T14:51:38
+188,OTGBYUEX,routine check-up,53,65,40,2026-01-01T00:00:00
+189,OTGBYUEX,preventive screening,56,61,50,2026-01-24T06:06:21
+190,OTGBYUEX,lifestyle coaching session,54,56,46,2026-02-26T07:14:47
+191,OTGBYUEX,routine check-up,56,66,39,2026-03-24T17:02:57
+192,OTGBYUEX,preventive screening,45,62,48,2026-04-25T22:49:38
+193,OTGBYUEX,lifestyle coaching session,59,59,45,2026-05-16T23:59:25
+194,OTGBYUEX,routine check-up,55,66,42,2026-06-25T01:18:04
+195,OTGBYUEX,preventive screening,63,57,50,2026-07-12T00:26:09
+196,OTGBYUEX,lifestyle coaching session,63,55,43,2026-08-18T04:27:35
+197,OTGBYUEX,routine check-up,52,57,53,2026-09-09T04:37:46
+198,OTGBYUEX,preventive screening,48,60,32,2026-10-04T18:29:36
+199,OTGBYUEX,lifestyle coaching session,51,53,43,2026-11-01T16:18:28
+200,OTGBYUEX,routine check-up,46,58,46,2026-12-12T07:37:10

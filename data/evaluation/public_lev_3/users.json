@@ -1,0 +1,362 @@
+[
+  {
+    "user_id": "CQQUQZGW",
+    "first_name": "Maria",
+    "last_name": "Staglieno",
+    "birth_year": 1940,
+    "job": "Retired",
+    "residence": {
+      "city": "Montalto di Castro",
+      "lat": "42.3514",
+      "lng": "11.6078"
+    }
+  },
+  {
+    "user_id": "SXGNVXTY",
+    "first_name": "Arnulfo",
+    "last_name": "Colletti",
+    "birth_year": 1986,
+    "job": "Retail Entrepreneur",
+    "residence": {
+      "city": "Turin",
+      "lat": "45.0792",
+      "lng": "7.6761"
+    }
+  },
+  {
+    "user_id": "FKXSZUEK",
+    "first_name": "Angelica",
+    "last_name": "Galilei",
+    "birth_year": 1982,
+    "job": "Business Manager",
+    "residence": {
+      "city": "Milan",
+      "lat": "45.4669",
+      "lng": "9.1900"
+    }
+  },
+  {
+    "user_id": "HGGNBOGI",
+    "first_name": "Luc",
+    "last_name": "Valette",
+    "birth_year": 1952,
+    "job": "Retired",
+    "residence": {
+      "city": "Pithiviers",
+      "lat": "48.1725",
+      "lng": "2.2525"
+    }
+  },
+  {
+    "user_id": "JBMQBKLY",
+    "first_name": "Paulina",
+    "last_name": "Rapisardi",
+    "birth_year": 1944,
+    "job": "Retired",
+    "residence": {
+      "city": "Adrano",
+      "lat": "37.6625",
+      "lng": "14.8356"
+    }
+  },
+  {
+    "user_id": "DHOGVULQ",
+    "first_name": "Elliott",
+    "last_name": "Brown",
+    "birth_year": 1987,
+    "job": "Restaurant Owner",
+    "residence": {
+      "city": "Darlaston",
+      "lat": "52.5708",
+      "lng": "-2.0457"
+    }
+  },
+  {
+    "user_id": "JQHECRDU",
+    "first_name": "Jeremy",
+    "last_name": "Reid",
+    "birth_year": 1992,
+    "job": "Freelance Designer",
+    "residence": {
+      "city": "New York",
+      "lat": "40.6943",
+      "lng": "-73.9249"
+    }
+  },
+  {
+    "user_id": "NJKJVKML",
+    "first_name": "Gioachino",
+    "last_name": "Depero",
+    "birth_year": 1935,
+    "job": "Retired",
+    "residence": {
+      "city": "Catania",
+      "lat": "37.5027",
+      "lng": "15.0873"
+    }
+  },
+  {
+    "user_id": "SZUWSANP",
+    "first_name": "Janet",
+    "last_name": "Douglas",
+    "birth_year": 1984,
+    "job": "Retail Entrepreneur",
+    "residence": {
+      "city": "Chesham",
+      "lat": "51.7120",
+      "lng": "-0.6120"
+    }
+  },
+  {
+    "user_id": "UGKAYQBB",
+    "first_name": "Cécile",
+    "last_name": "Aubert",
+    "birth_year": 1995,
+    "job": "Delivery Worker",
+    "residence": {
+      "city": "Nanterre",
+      "lat": "48.8988",
+      "lng": "2.1969"
+    }
+  },
+  {
+    "user_id": "AYDMMLFM",
+    "first_name": "Denis",
+    "last_name": "Pruvost",
+    "birth_year": 1989,
+    "job": "Retail Entrepreneur",
+    "residence": {
+      "city": "Villepinte",
+      "lat": "48.9550",
+      "lng": "2.5410"
+    }
+  },
+  {
+    "user_id": "XKDUJCVF",
+    "first_name": "Charlene",
+    "last_name": "Harris",
+    "birth_year": 2001,
+    "job": "Student",
+    "residence": {
+      "city": "Huddersfield",
+      "lat": "53.6450",
+      "lng": "-1.7798"
+    }
+  },
+  {
+    "user_id": "ZXFUOOCO",
+    "first_name": "Irmi",
+    "last_name": "Weitzel",
+    "birth_year": 1997,
+    "job": "Administrative Assistant",
+    "residence": {
+      "city": "Karlsruhe",
+      "lat": "49.0092",
+      "lng": "8.4040"
+    }
+  },
+  {
+    "user_id": "HNERAQOZ",
+    "first_name": "Giulio",
+    "last_name": "Turrini",
+    "birth_year": 1996,
+    "job": "Ride-share Driver",
+    "residence": {
+      "city": "Abbiategrasso",
+      "lat": "45.4009",
+      "lng": "8.9185"
+    }
+  },
+  {
+    "user_id": "TZCBNMOK",
+    "first_name": "Anastasie",
+    "last_name": "Hardy",
+    "birth_year": 1979,
+    "job": "Retail Entrepreneur",
+    "residence": {
+      "city": "Draguignan",
+      "lat": "43.5403",
+      "lng": "6.4667"
+    }
+  },
+  {
+    "user_id": "DMTBFOVX",
+    "first_name": "Dawn",
+    "last_name": "Robinson",
+    "birth_year": 1983,
+    "job": "Senior Consultant",
+    "residence": {
+      "city": "North Hempstead",
+      "lat": "40.7912",
+      "lng": "-73.6688"
+    }
+  },
+  {
+    "user_id": "BVFSZLHU",
+    "first_name": "Guy",
+    "last_name": "Lagarde",
+    "birth_year": 2000,
+    "job": "Delivery Worker",
+    "residence": {
+      "city": "Saint-Martin-d'Heres",
+      "lat": "45.1672",
+      "lng": "5.7653"
+    }
+  },
+  {
+    "user_id": "QFCGIEAD",
+    "first_name": "Susan",
+    "last_name": "Guilbert",
+    "birth_year": 1989,
+    "job": "Ride-share Driver",
+    "residence": {
+      "city": "Meudon",
+      "lat": "48.8123",
+      "lng": "2.2382"
+    }
+  },
+  {
+    "user_id": "ZGCMPAYN",
+    "first_name": "Jolanda",
+    "last_name": "Fracci",
+    "birth_year": 1950,
+    "job": "Retired",
+    "residence": {
+      "city": "Riccione Marina",
+      "lat": "44.0000",
+      "lng": "12.6500"
+    }
+  },
+  {
+    "user_id": "LNQIYFDW",
+    "first_name": "Matthew",
+    "last_name": "Lynch",
+    "birth_year": 1999,
+    "job": "Administrative Assistant",
+    "residence": {
+      "city": "Portsmouth",
+      "lat": "50.8058",
+      "lng": "-1.0872"
+    }
+  },
+  {
+    "user_id": "RLMBZGXU",
+    "first_name": "Gary",
+    "last_name": "Hicks",
+    "birth_year": 1992,
+    "job": "Office Clerk",
+    "residence": {
+      "city": "Los Angeles",
+      "lat": "34.1141",
+      "lng": "-118.4068"
+    }
+  },
+  {
+    "user_id": "PJNCBTOB",
+    "first_name": "Lydia",
+    "last_name": "Wesack",
+    "birth_year": 1986,
+    "job": "Business Manager",
+    "residence": {
+      "city": "Berlin",
+      "lat": "52.5200",
+      "lng": "13.4050"
+    }
+  },
+  {
+    "user_id": "RMTUSMMD",
+    "first_name": "Gerard",
+    "last_name": "Williams",
+    "birth_year": 1979,
+    "job": "Senior Consultant",
+    "residence": {
+      "city": "Irvine",
+      "lat": "55.6201",
+      "lng": "-4.6614"
+    }
+  },
+  {
+    "user_id": "VUJUNMRW",
+    "first_name": "Hans-Christian",
+    "last_name": "Wernecke",
+    "birth_year": 1994,
+    "job": "Ride-share Driver",
+    "residence": {
+      "city": "Braunschweig",
+      "lat": "52.2667",
+      "lng": "10.5167"
+    }
+  },
+  {
+    "user_id": "TKMGBPZT",
+    "first_name": "Cassandra",
+    "last_name": "Rhodes",
+    "birth_year": 1995,
+    "job": "Administrative Assistant",
+    "residence": {
+      "city": "Gainesville",
+      "lat": "38.7931",
+      "lng": "-77.6347"
+    }
+  },
+  {
+    "user_id": "KTPEJNMN",
+    "first_name": "Catherine",
+    "last_name": "Tucker",
+    "birth_year": 1979,
+    "job": "Retail Entrepreneur",
+    "residence": {
+      "city": "Oklahoma City",
+      "lat": "35.4676",
+      "lng": "-97.5136"
+    }
+  },
+  {
+    "user_id": "UQNAZOXF",
+    "first_name": "Roberta",
+    "last_name": "Rienzo",
+    "birth_year": 1952,
+    "job": "Retired",
+    "residence": {
+      "city": "Pioltello",
+      "lat": "45.5000",
+      "lng": "9.3333"
+    }
+  },
+  {
+    "user_id": "TEOUNORO",
+    "first_name": "Vittoria",
+    "last_name": "Bossi",
+    "birth_year": 1943,
+    "job": "Retired",
+    "residence": {
+      "city": "Torre del Greco",
+      "lat": "40.7853",
+      "lng": "14.3953"
+    }
+  },
+  {
+    "user_id": "LALKXUQS",
+    "first_name": "Ippazio",
+    "last_name": "Angeli",
+    "birth_year": 1987,
+    "job": "Retail Entrepreneur",
+    "residence": {
+      "city": "Frosinone",
+      "lat": "41.6333",
+      "lng": "13.3500"
+    }
+  },
+  {
+    "user_id": "DWNKNDUA",
+    "first_name": "Barbara",
+    "last_name": "Righi",
+    "birth_year": 2003,
+    "job": "Ride-share Driver",
+    "residence": {
+      "city": "Vigasio",
+      "lat": "45.3167",
+      "lng": "10.9333"
+    }
+  }
+]

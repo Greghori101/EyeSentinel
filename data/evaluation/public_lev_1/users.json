@@ -1,0 +1,62 @@
+[
+  {
+    "user_id": "KOHYHYFC",
+    "first_name": "Denis",
+    "last_name": "Delaunay",
+    "birth_year": 1992,
+    "job": "Restaurant Owner",
+    "residence": {
+      "city": "Draveil",
+      "lat": "48.6852",
+      "lng": "2.4080"
+    }
+  },
+  {
+    "user_id": "CARCNQIQ",
+    "first_name": "Ivonne",
+    "last_name": "Johann",
+    "birth_year": 1995,
+    "job": "Digital Creator",
+    "residence": {
+      "city": "Cologne",
+      "lat": "50.9364",
+      "lng": "6.9528"
+    }
+  },
+  {
+    "user_id": "UBZDIAQW",
+    "first_name": "Véronique",
+    "last_name": "Leclerc",
+    "birth_year": 1979,
+    "job": "Restaurant Owner",
+    "residence": {
+      "city": "Paris",
+      "lat": "48.8567",
+      "lng": "2.3522"
+    }
+  },
+  {
+    "user_id": "RGVPZVRK",
+    "first_name": "Jason",
+    "last_name": "Patel",
+    "birth_year": 2002,
+    "job": "Student",
+    "residence": {
+      "city": "South Union",
+      "lat": "39.8705",
+      "lng": "-79.7222"
+    }
+  },
+  {
+    "user_id": "VGYMNRLD",
+    "first_name": "Émilie",
+    "last_name": "Reynaud",
+    "birth_year": 1980,
+    "job": "Business Manager",
+    "residence": {
+      "city": "Monistrol-sur-Loire",
+      "lat": "45.2933",
+      "lng": "4.1728"
+    }
+  }
+]
