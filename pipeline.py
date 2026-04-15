@@ -31,7 +31,7 @@ from agents.analysis_agent import PatternAnalysisAgent
 from agents.training_agent import ModelTrainingAgent
 from agents.threshold_agent import ThresholdTuningAgent
 from agents.orchestrator import OrchestratorAgent
-from langfuse.decorators import observe
+from langfuse import observe
 
 
 BASE_DIR = Path(__file__).parent
@@ -78,16 +78,47 @@ def run_pipeline(level: int = 1, model: str | None = None) -> tuple[str, str]:
 
     orchestrator.run()
 
-    output_path = str(OUTPUT_DIR / f"level{level}_predictions.txt")
+    eval_path = str(OUTPUT_DIR / "evaluation" / f"level{level}_predictions.txt")
+    train_path = str(OUTPUT_DIR / "training" / f"level{level}_predictions.txt")
+
+    _save_session_id(OUTPUT_DIR, level, session_id)
 
     print(f"\n{'='*60}")
     print(f"DONE — Level {level}")
-    print(f"Output file: {output_path}")
+    print(f"Eval output:     {eval_path}")
+    print(f"Training output: {train_path}")
     print(f"\n>>> LANGFUSE SESSION ID: {session_id} <<<")
-    print(f"Submit this Session ID alongside your output file.")
+    print(f"Submit this Session ID alongside your eval output file.")
     print(f"{'='*60}\n")
 
-    return session_id, output_path
+    return session_id, eval_path
+
+
+def _save_session_id(output_dir: Path, level: int, session_id: str) -> None:
+    """Append session ID entry to outputs/session_ids.txt."""
+    session_file = output_dir / "session_ids.txt"
+
+    # Load existing entries
+    entries: dict[str, str] = {}
+    if session_file.exists():
+        for line in session_file.read_text(encoding="utf-8").splitlines():
+            if ": " in line:
+                key, val = line.split(": ", 1)
+                entries[key.strip()] = val.strip()
+
+    # Update both splits for this level
+    entries[f"training/level{level}"] = session_id
+    entries[f"evaluation/level{level}"] = session_id
+
+    # Write sorted: evaluation first, then training, ordered by level
+    lines = []
+    for split in ("evaluation", "training"):
+        for lvl in (1, 2, 3):
+            key = f"{split}/level{lvl}"
+            if key in entries:
+                lines.append(f"{key}: {entries[key]}")
+
+    session_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

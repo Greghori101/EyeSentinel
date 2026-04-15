@@ -1,8 +1,10 @@
 """
 Configuration for each level of the challenge.
 """
+
+from __future__ import annotations
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
@@ -28,7 +30,7 @@ class LevelConfig:
     level: int
     train_dir: Path
     eval_dir: Path
-    llm_model: str = "meta-llama/llama-3.1-8b-instruct:free"
+    llm_model: str = "google/gemma-4-31b-it:free"
 
     @property
     def train_status(self) -> Path:
@@ -66,7 +68,7 @@ class LevelConfig:
 def get_level_config(level: int, model: str | None = None) -> LevelConfig:
     train_dir = DATA_DIR / "training" / f"public_lev_{level}"
     eval_dir = DATA_DIR / "evaluation" / f"public_lev_{level}"
-    default_model = os.getenv("LLM_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
+    default_model = os.getenv("LLM_MODEL", "google/gemma-4-31b-it:free")
     return LevelConfig(
         level=level,
         train_dir=train_dir,

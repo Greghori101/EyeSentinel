@@ -22,8 +22,9 @@ class FeatureEngineeringAgent:
         """
         raw_df = self.store.get_raw(split)
         users_df = self.store.metadata.get(f"{split}_users_df")
+        personas = self.store.metadata.get(f"{split}_personas")
 
-        features_df = build_feature_matrix(raw_df, users_df, feature_groups)
+        features_df = build_feature_matrix(raw_df, users_df, feature_groups, personas)
         self.store.set_features(split, features_df)
 
         # Derive labels for training split

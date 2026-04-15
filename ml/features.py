@@ -178,6 +178,66 @@ def compute_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
+def compute_persona_features(personas: dict) -> pd.DataFrame:
+    """
+    Extract numeric features from parsed persona profiles.
+    Signals: age, mobility level, health risk indicators, social isolation.
+    """
+    def mobility_score(text: str) -> float:
+        t = text.lower()
+        if "very low" in t:
+            return 0.0
+        if "low-moderate" in t or "low moderate" in t:
+            return 1.5
+        if "low" in t:
+            return 1.0
+        if "variable" in t:
+            return 2.5
+        if "moderate" in t:
+            return 2.0
+        if "high" in t:
+            return 3.0
+        return 1.5
+
+    def health_risk_score(text: str) -> float:
+        t = text.lower()
+        risk = ["irregular", "avoids", "unstable", "declining", "poor", "heavy reliance",
+                "sleep issues", "back pain", "cancelling", "run-down", "persistent"]
+        protective = ["stable", "well-managed", "active", "coordinated", "regular", "gym"]
+        score = sum(1.0 for kw in risk if kw in t)
+        score -= sum(0.5 for kw in protective if kw in t)
+        return max(0.0, score)
+
+    def social_isolation_score(text: str) -> float:
+        t = text.lower()
+        isolated = ["cancelling", "alone", "narrowed", "small", "rare", "increasingly",
+                    "spending more time alone", "avoids"]
+        connected = ["broad", "daily", "regular", "active", "frequent", "wide"]
+        score = sum(1.0 for kw in isolated if kw in t)
+        score -= sum(0.5 for kw in connected if kw in t)
+        return max(0.0, score)
+
+    records = []
+    for cid, p in personas.items():
+        age = p.get("age") or 0
+        occ = (p.get("occupation") or "").lower()
+        mob = p.get("mobility") or ""
+        health = p.get("health_behavior") or ""
+        social = p.get("social_pattern") or ""
+        full = p.get("full_text") or ""
+
+        records.append({
+            "CitizenID": cid,
+            "persona_age": float(age),
+            "persona_age_over_75": int(age >= 75),
+            "persona_is_retired": int("retired" in occ),
+            "persona_mobility_score": mobility_score(mob),
+            "persona_health_risk_score": health_risk_score(health + " " + full),
+            "persona_social_isolation_score": social_isolation_score(social + " " + full),
+        })
+    return pd.DataFrame(records)
+
+
 def compute_user_features(df: pd.DataFrame, users_df: pd.DataFrame | None) -> pd.DataFrame:
     """
     Features from user profile (age, job category).
@@ -202,6 +262,7 @@ def build_feature_matrix(
     status_df: pd.DataFrame,
     users_df: pd.DataFrame | None,
     feature_groups: list[str],
+    personas: dict | None = None,
 ) -> pd.DataFrame:
     """
     Build a citizen-level feature matrix from the requested feature groups.
@@ -221,6 +282,9 @@ def build_feature_matrix(
 
     if "user_features" in feature_groups:
         dfs.append(compute_user_features(status_df, users_df))
+
+    if "persona_features" in feature_groups and personas:
+        dfs.append(compute_persona_features(personas))
 
     result = citizens.copy()
     for feat_df in dfs[1:]:

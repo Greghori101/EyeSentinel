@@ -9,9 +9,10 @@ TOOL_DEFINITIONS = [
         "function": {
             "name": "load_data",
             "description": (
-                "Load and merge status.csv, locations.json, and users.json for a given split. "
-                "Returns a metadata summary (row counts, citizen list, event type distribution, "
-                "missing-value rates). The raw data is stored internally and not returned in full."
+                "Load and merge status.csv, locations.json, users.json, and personas.md for a given split. "
+                "Returns a metadata summary including row counts, citizen list, event type distribution, "
+                "and per-citizen persona profiles (age, mobility, health behavior, social pattern). "
+                "The raw data is stored internally and not returned in full."
             ),
             "parameters": {
                 "type": "object",
@@ -59,7 +60,8 @@ TOOL_DEFINITIONS = [
             "name": "engineer_features",
             "description": (
                 "Compute feature groups from the loaded raw data for a given split. "
-                "Available groups: event_features, biometric_features, temporal_features, user_features. "
+                "Available groups: event_features, biometric_features, temporal_features, user_features, persona_features. "
+                "persona_features extracts age, mobility score, health risk, and social isolation from citizen personas. "
                 "Returns a summary of features computed (count, warnings). "
                 "Always include 'event_features' — it contains the strongest signal."
             ),
@@ -132,9 +134,10 @@ TOOL_DEFINITIONS = [
         "function": {
             "name": "predict_and_write",
             "description": (
-                "Apply the trained model to the evaluation features, using the chosen threshold, "
-                "and write the output .txt file. Returns the list of citizen IDs predicted as "
-                "needing preventive support (label=1) and the output file path."
+                "Apply the trained model to both evaluation and training features using the chosen threshold. "
+                "Writes two output files: outputs/evaluation/level{N}_predictions.txt (submit this) "
+                "and outputs/training/level{N}_predictions.txt (reference). "
+                "Returns predicted label=1 citizen IDs for both splits."
             ),
             "parameters": {
                 "type": "object",

@@ -34,12 +34,14 @@ Key rules:
 - Reason briefly before each tool call
 - Do not call all tools blindly — adapt based on what you observe
 - event_features contains the strongest signal (event type escalation)
+- persona_features encodes behavioral profiles: age, mobility, health risk, social isolation — use them
 - After seeing CV F1 results, decide if re-training with a different model is warranted
 - Minimize LLM calls and tool overhead; be efficient
 
-Output format requirement: the output .txt file must contain only citizen IDs (one per line) for citizens predicted as label=1.
+Output format requirement: both output files must contain only citizen IDs (one per line) for citizens predicted as label=1.
+Outputs are written to outputs/evaluation/level{N}_predictions.txt (submission) and outputs/training/level{N}_predictions.txt (reference).
 
-When you have written the output file and are done, say "PIPELINE COMPLETE" and explain your key findings."""
+When you have written both output files and are done, say "PIPELINE COMPLETE" and explain your key findings."""
 
 
 class ToolDispatcher:
@@ -91,33 +93,40 @@ class ToolDispatcher:
             return {"error": f"Unknown tool: {tool_name}"}
 
     def _predict_and_write(self, threshold: float, output_path: str) -> dict:
-        import numpy as np
+        level = self.store.metadata.get("level", 1)
 
-        features_df = self.store.get_features("eval")
-        X = features_df.drop(columns=["CitizenID"]).values
-        citizen_ids = features_df["CitizenID"].values
+        def _run_split(split: str) -> tuple[list, str]:
+            features_df = self.store.get_features(split)
+            X = features_df.drop(columns=["CitizenID"]).values
+            citizen_ids = features_df["CitizenID"].values
+            proba = self.store.model.predict_proba(X)[:, 1]
+            preds = (proba >= threshold).astype(int)
+            positives = [str(cid) for cid, p in zip(citizen_ids, preds) if p == 1]
 
-        proba = self.store.model.predict_proba(X)[:, 1]
-        preds = (proba >= threshold).astype(int)
+            if split == "eval":
+                path = output_path if output_path else str(
+                    self.output_dir / "evaluation" / f"level{level}_predictions.txt"
+                )
+            else:
+                path = str(self.output_dir / "training" / f"level{level}_predictions.txt")
 
-        predicted_positive = [
-            str(cid) for cid, p in zip(citizen_ids, preds) if p == 1
-        ]
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "w", encoding="utf-8") as f:
+                for cid in positives:
+                    f.write(cid + "\n")
 
-        if not output_path:
-            level = self.store.metadata.get("level", 1)
-            output_path = str(self.output_dir / f"level{level}_predictions.txt")
+            return positives, path
 
-        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, "w", encoding="utf-8") as f:
-            for cid in predicted_positive:
-                f.write(cid + "\n")
+        eval_positives, eval_path = _run_split("eval")
+        train_positives, train_path = _run_split("train")
 
         return {
-            "output_path": output_path,
-            "n_predicted_positive": len(predicted_positive),
-            "n_total_citizens": len(citizen_ids),
-            "predicted_positive_ids": predicted_positive,
+            "eval_output_path": eval_path,
+            "train_output_path": train_path,
+            "eval_predicted_positive_ids": eval_positives,
+            "train_predicted_positive_ids": train_positives,
+            "n_eval_positive": len(eval_positives),
+            "n_train_positive": len(train_positives),
             "threshold_used": threshold,
         }
 
@@ -159,7 +168,8 @@ class OrchestratorAgent:
                     f"Begin the classification pipeline for Level {level}. "
                     f"Training data is at: data/training/public_lev_{level}/. "
                     f"Evaluation data is at: data/evaluation/public_lev_{level}/. "
-                    f"Output file: outputs/level{level}_predictions.txt. "
+                    f"Output files: outputs/evaluation/level{level}_predictions.txt (eval) "
+                    f"and outputs/training/level{level}_predictions.txt (train). "
                     "Start by loading the training data."
                 ),
             }
