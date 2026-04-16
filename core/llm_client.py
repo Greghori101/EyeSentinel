@@ -11,25 +11,40 @@ from langfuse import observe, get_client
 
 # Ordered fallback list — tried in sequence on rate limit / 404
 FALLBACK_MODELS = [
-    "openrouter/elephant-alpha",
+    # 🔥 PRIMARY (high success rate, rarely blocked)
+    "anthropic/claude-sonnet-4.6",
+    "deepseek/deepseek-chat-v3.2",
+    "google/gemini-3.1-flash-lite",
+
+    # ⚖️ STRONG MID (good balance, usually available)
+    "z-ai/glm-5",
+    "mistralai/mistral-large-3",
+    "minimax/minimax-m2.5",
+
+    # 💰 YOUR STRONG FREE MODELS (reordered by reliability)
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "nousresearch/hermes-3-llama-3.1-405b:free",
+    "qwen/qwen3-coder:free",
+
+    # ⚡ SMALL / FAST FREE (higher uptime)
     "google/gemma-4-26b-a4b-it:free",
     "nvidia/nemotron-3-super-120b-a12b:free",
-    "minimax/minimax-m2.5:free",
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "nvidia/nemotron-nano-12b-v2-vl:free",
+    "nvidia/nemotron-nano-9b-v2:free",
+
+    # 🧪 UNSTABLE / EXPERIMENTAL (keep last)
     "arcee-ai/trinity-large-preview:free",
     "liquid/lfm-2.5-1.2b-thinking:free",
     "liquid/lfm-2.5-1.2b-instruct:free",
-    "nvidia/nemotron-3-nano-30b-a3b:free",
-    "nvidia/nemotron-nano-12b-v2-vl:free",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "nvidia/nemotron-nano-9b-v2:free",
     "openai/gpt-oss-120b:free",
     "openai/gpt-oss-20b:free",
-    "z-ai/glm-4.5-air:free",
-    "qwen/qwen3-coder:free",
     "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
     "meta-llama/llama-3.2-3b-instruct:free",
-    "nousresearch/hermes-3-llama-3.1-405b:free",
+    "openrouter/elephant-alpha",
+
+    # 🔁 NON-FREE FALLBACK (only if you allow paid implicitly)
     "google/gemma-4-26b-a4b-it",
 ]
 
