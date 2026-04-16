@@ -1,44 +1,55 @@
-"""
-In-memory store shared between all agents during a single pipeline run.
-"""
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Any
+
 import pandas as pd
+
+from core.config import ScenarioConfig
+
+
+@dataclass
+class DatasetBundle:
+    config: ScenarioConfig
+    transactions: pd.DataFrame
+    users: pd.DataFrame
+    locations: pd.DataFrame
+    sms: list[dict[str, Any]]
+    mails: list[dict[str, Any]]
+    audio_events: pd.DataFrame
+    actor_directory: pd.DataFrame
 
 
 @dataclass
 class FeatureStore:
-    # Raw dataframes (indexed by split: "train" or "eval")
-    _raw: dict[str, pd.DataFrame] = field(default_factory=dict)
-    _features: dict[str, pd.DataFrame] = field(default_factory=dict)
-
-    # Labels derived from training data
-    train_labels: pd.Series | None = None
-
-    # Trained model
-    model: Any = None
-
-    # Decision threshold chosen by orchestrator
-    threshold: float = 0.5
-
-    # Metadata accumulated during the run
+    bundle: DatasetBundle | None = None
+    feature_frames: dict[str, pd.DataFrame] = field(default_factory=dict)
+    merged_features: pd.DataFrame | None = None
+    anomaly_scores: pd.DataFrame | None = None
+    predictions: pd.DataFrame | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def set_raw(self, split: str, df: pd.DataFrame) -> None:
-        self._raw[split] = df
+    def set_bundle(self, bundle: DatasetBundle) -> None:
+        self.bundle = bundle
 
-    def get_raw(self, split: str) -> pd.DataFrame:
-        return self._raw[split]
+    def set_features(self, name: str, frame: pd.DataFrame) -> None:
+        self.feature_frames[name] = frame
 
-    def set_features(self, split: str, df: pd.DataFrame) -> None:
-        self._features[split] = df
+    def get_features(self, name: str) -> pd.DataFrame:
+        return self.feature_frames[name]
 
-    def get_features(self, split: str) -> pd.DataFrame:
-        return self._features[split]
+    def merge_features(self, key: str = "transaction_id") -> pd.DataFrame:
+        if not self.feature_frames:
+            raise ValueError("No feature frames available to merge.")
 
-    def has_raw(self, split: str) -> bool:
-        return split in self._raw
+        frames = list(self.feature_frames.values())
+        merged = frames[0].copy()
+        for frame in frames[1:]:
+            merged = merged.merge(frame, on=key, how="left")
 
-    def has_features(self, split: str) -> bool:
-        return split in self._features
+        numeric_columns = merged.select_dtypes(include=["number", "bool"]).columns.tolist()
+        if numeric_columns:
+            merged[numeric_columns] = merged[numeric_columns].fillna(0.0)
+        merged = merged.fillna("")
+        self.merged_features = merged
+        return merged

@@ -1,138 +1,251 @@
-"""
-DataIngestionAgent: loads and merges status.csv, locations.json, users.json, personas.md.
-Stores results in FeatureStore; returns a compact metadata summary to the LLM.
-"""
 from __future__ import annotations
+
 import json
-import re
-import pandas as pd
+import unicodedata
+from collections import Counter
 from pathlib import Path
-from langfuse import observe
-from core.config import LevelConfig
-from core.feature_store import FeatureStore
+
+import pandas as pd
+
+from core.config import ScenarioConfig
+from core.feature_store import DatasetBundle, FeatureStore
+
+
+def normalize_text(value: str) -> str:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        value = ""
+    elif not isinstance(value, str):
+        value = str(value)
+    value = unicodedata.normalize("NFKD", value or "")
+    value = value.encode("ascii", "ignore").decode("ascii")
+    value = value.lower().strip()
+    return " ".join(value.split())
+
+
+def normalize_name(value: str) -> str:
+    return normalize_text(value).replace("_", " ")
 
 
 class DataIngestionAgent:
-    def __init__(self, config: LevelConfig, store: FeatureStore):
-        self.config = config
+    def __init__(self, store: FeatureStore):
         self.store = store
 
-    @observe(name="data_ingestion")
-    def run(self, split: str) -> dict:
-        """Load and merge data for 'train' or 'eval' split."""
-        if split == "train":
-            status_path = self.config.train_status
-            loc_path = self.config.train_locations
-            users_path = self.config.train_users
-            personas_path = self.config.train_personas
-        else:
-            status_path = self.config.eval_status
-            loc_path = self.config.eval_locations
-            users_path = self.config.eval_users
-            personas_path = self.config.eval_personas
+    def run(self, config: ScenarioConfig) -> dict:
+        transactions = pd.read_csv(config.dataset_dir / "transactions.csv")
+        transactions["timestamp"] = pd.to_datetime(
+            transactions["timestamp"], errors="coerce"
+        )
+        transactions["amount"] = pd.to_numeric(
+            transactions["amount"], errors="coerce"
+        ).fillna(0.0)
+        transactions["balance_after"] = pd.to_numeric(
+            transactions["balance_after"], errors="coerce"
+        ).fillna(0.0)
+        transactions = transactions.sort_values("timestamp").reset_index(drop=True)
 
-        status_df = self._load_status(status_path)
-        users_df = self._load_users(users_path)
-        locations_df = self._load_locations(loc_path)
-        personas = self._load_personas(personas_path)
+        users = pd.DataFrame(
+            json.loads((config.dataset_dir / "users.json").read_text(encoding="utf-8"))
+        )
+        users = self._enrich_users(users)
 
-        self.store.metadata[f"{split}_users_df"] = users_df
-        self.store.metadata[f"{split}_locations_df"] = locations_df
-        self.store.metadata[f"{split}_personas"] = personas
+        locations = pd.DataFrame(
+            json.loads(
+                (config.dataset_dir / "locations.json").read_text(encoding="utf-8")
+            )
+        )
+        locations["timestamp"] = pd.to_datetime(locations["timestamp"], errors="coerce")
+        locations = locations.sort_values("timestamp").reset_index(drop=True)
 
-        self.store.set_raw(split, status_df)
+        sms = json.loads((config.dataset_dir / "sms.json").read_text(encoding="utf-8"))
+        mails = json.loads(
+            (config.dataset_dir / "mails.json").read_text(encoding="utf-8")
+        )
+        audio_events = self._load_audio_events(config.dataset_dir / "audio")
+        actor_directory = self._build_actor_directory(transactions, users, locations)
 
-        return self._summarize(status_df, users_df, personas, split)
+        bundle = DatasetBundle(
+            config=config,
+            transactions=transactions,
+            users=users,
+            locations=locations,
+            sms=sms,
+            mails=mails,
+            audio_events=audio_events,
+            actor_directory=actor_directory,
+        )
+        self.store.set_bundle(bundle)
 
-    def _load_status(self, path: Path) -> pd.DataFrame:
-        df = pd.read_csv(path)
-        df["Timestamp"] = pd.to_datetime(df["Timestamp"])
-        return df
+        return {
+            "dataset": config.scenario_name,
+            "split": config.split,
+            "n_transactions": int(len(transactions)),
+            "n_users": int(len(users)),
+            "n_locations": int(len(locations)),
+            "n_sms": int(len(sms)),
+            "n_mails": int(len(mails)),
+            "n_audio_events": int(len(audio_events)),
+            "n_resolved_actors": int(len(actor_directory)),
+            "output_path": str(config.output_path),
+        }
 
-    def _load_users(self, path: Path) -> pd.DataFrame | None:
-        if not path.exists():
-            return None
-        with open(path) as f:
-            data = json.load(f)
-        return pd.DataFrame(data)
+    def _enrich_users(self, users: pd.DataFrame) -> pd.DataFrame:
+        if users.empty:
+            return users
 
-    def _load_locations(self, path: Path) -> pd.DataFrame | None:
-        if not path.exists():
-            return None
-        with open(path) as f:
-            data = json.load(f)
-        if isinstance(data, list):
-            return pd.DataFrame(data)
-        return pd.DataFrame([data])
+        users = users.copy()
+        users["full_name"] = (
+            users["first_name"].fillna("") + " " + users["last_name"].fillna("")
+        ).str.strip()
+        users["normalized_name"] = users["full_name"].map(normalize_name)
+        users["first_name_norm"] = users["first_name"].fillna("").map(normalize_name)
+        users["salary"] = pd.to_numeric(users.get("salary"), errors="coerce").fillna(
+            0.0
+        )
+        users["birth_year"] = pd.to_numeric(
+            users.get("birth_year"), errors="coerce"
+        ).fillna(0.0)
+        users["age"] = (2087 - users["birth_year"]).clip(lower=0)
+        return users
 
-    def _load_personas(self, path: Path) -> dict:
-        """Parse personas.md into a dict mapping CitizenID → structured fields."""
-        if not path.exists():
-            return {}
-        text = path.read_text(encoding="utf-8")
-        sections = re.split(r"^## ", text, flags=re.MULTILINE)
-        personas = {}
-        for section in sections[1:]:
-            lines = section.strip().split("\n")
-            header = lines[0]
-            match = re.match(r"([A-Z0-9]+)\s+-\s+(.+)", header)
-            if not match:
+    def _load_audio_events(self, audio_dir: Path) -> pd.DataFrame:
+        rows: list[dict] = []
+        if not audio_dir.exists():
+            return pd.DataFrame(
+                columns=["timestamp", "speaker_name", "speaker_name_norm", "file_path"]
+            )
+
+        for path in sorted(audio_dir.glob("*.mp3")):
+            stem = path.stem
+            if "-" not in stem:
                 continue
-            citizen_id, name = match.group(1), match.group(2).strip()
+            ts_part, speaker_part = stem.split("-", 1)
+            rows.append(
+                {
+                    "timestamp": pd.to_datetime(
+                        ts_part, format="%Y%m%d_%H%M%S", errors="coerce"
+                    ),
+                    "speaker_name": speaker_part.replace("_", " "),
+                    "speaker_name_norm": normalize_name(speaker_part),
+                    "file_path": str(path),
+                }
+            )
+        return pd.DataFrame(rows)
 
-            age_m = re.search(r"\*\*Age:\*\*\s*(\d+)", section)
-            occ_m = re.search(r"\*\*Occupation:\*\*\s*([^|]+)", section)
-            mob_m = re.search(r"\*\*Mobility:\*\*\s*(.+?)(?:\n|$)", section)
-            health_m = re.search(r"\*\*Health behavior:\*\*\s*(.+?)(?:\n|$)", section)
-            social_m = re.search(r"\*\*Social pattern:\*\*\s*(.+?)(?:\n|$)", section)
+    def _build_actor_directory(
+        self,
+        transactions: pd.DataFrame,
+        users: pd.DataFrame,
+        locations: pd.DataFrame,
+    ) -> pd.DataFrame:
+        actor_rows: list[dict] = []
+        for row in transactions.itertuples(index=False):
+            if getattr(row, "sender_id", ""):
+                actor_rows.append(
+                    {
+                        "actor_id": row.sender_id,
+                        "iban": row.sender_iban or "",
+                        "role": "sender",
+                    }
+                )
+            if getattr(row, "recipient_id", ""):
+                actor_rows.append(
+                    {
+                        "actor_id": row.recipient_id,
+                        "iban": row.recipient_iban or "",
+                        "role": "recipient",
+                    }
+                )
 
-            personas[citizen_id] = {
-                "name": name,
-                "age": int(age_m.group(1)) if age_m else None,
-                "occupation": occ_m.group(1).strip() if occ_m else "",
-                "mobility": mob_m.group(1).strip() if mob_m else "",
-                "health_behavior": health_m.group(1).strip() if health_m else "",
-                "social_pattern": social_m.group(1).strip() if social_m else "",
-                "full_text": section.strip(),
-            }
-        return personas
+        actor_df = pd.DataFrame(actor_rows)
+        if actor_df.empty:
+            return pd.DataFrame(
+                columns=[
+                    "actor_id",
+                    "iban",
+                    "full_name",
+                    "normalized_name",
+                    "first_name_norm",
+                    "salary",
+                    "age",
+                    "description",
+                    "city",
+                    "res_lat",
+                    "res_lng",
+                ]
+            )
 
-    def _summarize(self, status_df: pd.DataFrame, users_df: pd.DataFrame | None, personas: dict, split: str) -> dict:
-        citizens = status_df["CitizenID"].unique().tolist()
-        event_dist = status_df["EventType"].value_counts().to_dict()
-        has_escalated = status_df["EventType"].isin([
-            "follow-up assessment", "specialist consultation",
-            "emergency visit", "urgent care visit", "hospital admission"
-        ])
-        citizens_with_escalated = status_df[has_escalated]["CitizenID"].unique().tolist()
+        grouped = actor_df.groupby("actor_id")
+        directory = (
+            grouped.agg(
+                canonical_iban=("iban", self._mode_non_empty),
+                sender_occurrences=("role", lambda s: int((s == "sender").sum())),
+                recipient_occurrences=("role", lambda s: int((s == "recipient").sum())),
+            )
+            .reset_index()
+            .rename(columns={"canonical_iban": "iban"})
+        )
 
-        persona_summaries = {
-            cid: {
-                "age": p["age"],
-                "occupation": p["occupation"],
-                "mobility": p["mobility"],
-                "health_behavior": p["health_behavior"],
-                "social_pattern": p["social_pattern"],
-            }
-            for cid, p in personas.items()
-        }
+        if not users.empty:
+            user_columns = [
+                "iban",
+                "full_name",
+                "normalized_name",
+                "first_name_norm",
+                "salary",
+                "age",
+                "description",
+                "residence",
+            ]
+            merged = directory.merge(users[user_columns], on="iban", how="left")
+        else:
+            merged = directory.copy()
+            merged["full_name"] = ""
+            merged["normalized_name"] = ""
+            merged["first_name_norm"] = ""
+            merged["salary"] = 0.0
+            merged["age"] = 0.0
+            merged["description"] = ""
+            merged["residence"] = None
 
-        summary = {
-            "split": split,
-            "n_events": int(len(status_df)),
-            "n_citizens": int(len(citizens)),
-            "citizen_ids": citizens,
-            "event_type_distribution": {k: int(v) for k, v in event_dist.items()},
-            "citizens_with_escalated_events": citizens_with_escalated,
-            "has_users_data": users_df is not None and not users_df.empty,
-            "has_personas": bool(personas),
-            "n_personas_loaded": len(personas),
-            "persona_summaries": persona_summaries,
-            "pai_range": [float(status_df["PhysicalActivityIndex"].min()),
-                          float(status_df["PhysicalActivityIndex"].max())],
-            "sqi_range": [float(status_df["SleepQualityIndex"].min()),
-                          float(status_df["SleepQualityIndex"].max())],
-            "eel_range": [float(status_df["EnvironmentalExposureLevel"].min()),
-                          float(status_df["EnvironmentalExposureLevel"].max())],
-        }
-        return summary
+        if not locations.empty:
+            loc_summary = (
+                locations.groupby("biotag")
+                .agg(
+                    n_locations=("biotag", "size"),
+                    unique_cities=("city", pd.Series.nunique),
+                    first_location_ts=("timestamp", "min"),
+                    last_location_ts=("timestamp", "max"),
+                )
+                .reset_index()
+                .rename(columns={"biotag": "actor_id"})
+            )
+            merged = merged.merge(loc_summary, on="actor_id", how="left")
+
+        merged["n_locations"] = merged.get("n_locations", 0).fillna(0).astype(int)
+        merged["unique_cities"] = merged.get("unique_cities", 0).fillna(0).astype(int)
+        merged["city"] = merged["residence"].map(
+            lambda r: (r or {}).get("city", "") if isinstance(r, dict) else ""
+        )
+        merged["res_lat"] = pd.to_numeric(
+            merged["residence"].map(
+                lambda r: (r or {}).get("lat") if isinstance(r, dict) else None
+            ),
+            errors="coerce",
+        )
+        merged["res_lng"] = pd.to_numeric(
+            merged["residence"].map(
+                lambda r: (r or {}).get("lng") if isinstance(r, dict) else None
+            ),
+            errors="coerce",
+        )
+        merged = merged.drop(columns=["residence"], errors="ignore")
+        return merged
+
+    @staticmethod
+    def _mode_non_empty(values: pd.Series) -> str:
+        cleaned = [
+            value for value in values if isinstance(value, str) and value.strip()
+        ]
+        if not cleaned:
+            return ""
+        return Counter(cleaned).most_common(1)[0][0]

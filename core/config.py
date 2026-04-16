@@ -1,77 +1,65 @@
-"""
-Configuration for each level of the challenge.
-"""
-
 from __future__ import annotations
+
 import os
+import re
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
+
 BASE_DIR = Path(__file__).parent.parent
-DATA_DIR = BASE_DIR / "data"
-
-STANDARD_EVENT_TYPES = {
-    "routine check-up",
-    "preventive screening",
-    "lifestyle coaching session",
-}
-
-ESCALATED_EVENT_TYPES = {
-    "follow-up assessment",
-    "specialist consultation",
-    "emergency visit",
-    "urgent care visit",
-    "hospital admission",
-}
+CHALLENGE_DATA_DIR = BASE_DIR / "challenge_data"
+OUTPUT_DIR = BASE_DIR / "outputs"
+DEFAULT_MODEL = os.getenv("LLM_MODEL", "openrouter/elephant-alpha")
 
 
-@dataclass
-class LevelConfig:
-    level: int
-    train_dir: Path
-    eval_dir: Path
-    llm_model: str = "google/gemma-4-31b-it:free"
+def slugify(value: str) -> str:
+    value = value.lower().strip()
+    value = re.sub(r"[^a-z0-9]+", "_", value)
+    return value.strip("_")
+
+
+@dataclass(frozen=True)
+class ScenarioConfig:
+    split: str
+    scenario_name: str
+    dataset_dir: Path
 
     @property
-    def train_status(self) -> Path:
-        return self.train_dir / "status.csv"
+    def slug(self) -> str:
+        return slugify(self.scenario_name)
 
     @property
-    def train_locations(self) -> Path:
-        return self.train_dir / "locations.json"
-
-    @property
-    def train_users(self) -> Path:
-        return self.train_dir / "users.json"
-
-    @property
-    def train_personas(self) -> Path:
-        return self.train_dir / "personas.md"
-
-    @property
-    def eval_status(self) -> Path:
-        return self.eval_dir / "status.csv"
-
-    @property
-    def eval_locations(self) -> Path:
-        return self.eval_dir / "locations.json"
-
-    @property
-    def eval_users(self) -> Path:
-        return self.eval_dir / "users.json"
-
-    @property
-    def eval_personas(self) -> Path:
-        return self.eval_dir / "personas.md"
+    def output_path(self) -> Path:
+        return OUTPUT_DIR / self.split / f"{self.slug}_predictions.txt"
 
 
-def get_level_config(level: int, model: str | None = None) -> LevelConfig:
-    train_dir = DATA_DIR / "training" / f"public_lev_{level}"
-    eval_dir = DATA_DIR / "evaluation" / f"public_lev_{level}"
-    default_model = os.getenv("LLM_MODEL", "google/gemma-4-31b-it:free")
-    return LevelConfig(
-        level=level,
-        train_dir=train_dir,
-        eval_dir=eval_dir,
-        llm_model=model or default_model,
-    )
+def discover_scenarios(split: str | None = None, scenario: str | None = None) -> list[ScenarioConfig]:
+    requested_splits = [split] if split else ["training", "evaluation"]
+    configs: list[ScenarioConfig] = []
+
+    for split_name in requested_splits:
+        split_dir = CHALLENGE_DATA_DIR / split_name
+        if not split_dir.exists():
+            continue
+
+        for dataset_dir in sorted(path for path in split_dir.iterdir() if path.is_dir()):
+            if scenario and dataset_dir.name != scenario and slugify(dataset_dir.name) != slugify(scenario):
+                continue
+            configs.append(
+                ScenarioConfig(
+                    split=split_name,
+                    scenario_name=dataset_dir.name,
+                    dataset_dir=dataset_dir,
+                )
+            )
+
+    if not configs:
+        raise FileNotFoundError(
+            f"No datasets found for split={split!r} scenario={scenario!r} under {CHALLENGE_DATA_DIR}"
+        )
+    return configs
+
+
+def new_session_id() -> str:
+    return f"reply-mirror-{uuid.uuid4().hex[:16]}"

@@ -1,9 +1,0 @@
-langfuse>=2.0.0
-python-dotenv
-openai
-anthropic
-pandas
-numpy
-scikit-learn
-scipy
-geopy
