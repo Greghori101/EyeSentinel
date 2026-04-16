@@ -42,7 +42,9 @@ class FraudOrchestrator:
                 self.transaction_agent.run, bundle, reference_profile
             )
             behavior_future = executor.submit(self.behavior_agent.run, bundle)
-            communication_future = executor.submit(self.communication_agent.run, bundle)
+            communication_future = executor.submit(
+                self.communication_agent.run, bundle, reference_profile
+            )
             tx_features = tx_future.result()
             behavior_features = behavior_future.result()
             communication_features = communication_future.result()
@@ -116,6 +118,7 @@ class FraudOrchestrator:
             "feature_ranges": feature_ranges,
             "transaction_type_frequency": transaction_type_frequency,
             "payment_method_frequency": payment_method_frequency,
+            "message_memory": self._build_message_memory(),
             "decision": {
                 "score_threshold": float(
                     self.store.metadata.get("decision_threshold", 0.0)
@@ -130,3 +133,26 @@ class FraudOrchestrator:
                 ),
             },
         }
+
+    def _build_message_memory(self) -> list[dict]:
+        parsed_messages = self.store.metadata.get("parsed_messages")
+        if parsed_messages is None or len(parsed_messages) == 0:
+            return []
+
+        frame = parsed_messages.copy()
+        if "message_risk" not in frame.columns:
+            return []
+
+        frame = frame.sort_values("message_risk", ascending=False)
+        frame = frame.drop_duplicates(subset=["normalized_text"])
+        frame = frame[frame["message_risk"] >= 0.45].head(120)
+        memory: list[dict] = []
+        for row in frame.itertuples(index=False):
+            memory.append(
+                {
+                    "text": str(getattr(row, "normalized_text", "")),
+                    "score": float(getattr(row, "message_risk", 0.0)),
+                    "source": str(getattr(row, "source", "")),
+                }
+            )
+        return memory

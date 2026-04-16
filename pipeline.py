@@ -1,13 +1,23 @@
 from __future__ import annotations
 import argparse
+import os
 
 from dotenv import load_dotenv
+from langfuse import Langfuse, get_client
 
 load_dotenv()
 
-from core.config import OUTPUT_DIR, ScenarioConfig, discover_scenarios, new_session_id
+from core.config import OUTPUT_DIR, ScenarioConfig, discover_scenarios
 from core.feature_store import FeatureStore
+from core.langfuse_setup import configure, new_session_id
 from agents.orchestrator import FraudOrchestrator
+
+
+langfuse_client = Langfuse(
+    public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+    secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+    host=os.getenv("LANGFUSE_HOST", "https://challenges.reply.com/langfuse"),
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -91,12 +101,14 @@ def _run_single_config(
     announce: bool = True,
 ) -> tuple[dict, dict | None]:
     session_id = new_session_id()
+    configure(session_id)
     split_label = "train" if config.split == "training" else "eval"
     if announce:
         print(f"[{split_label}] dataset={config.scenario_name}")
         print(f"  session_id:   {session_id}")
 
     store = FeatureStore()
+    store.metadata["session_id"] = session_id
     orchestrator = FraudOrchestrator(store=store, output_dir=OUTPUT_DIR)
     result = orchestrator.run(
         config,
@@ -143,6 +155,22 @@ def _write_session_manifest(split: str, slug: str, session_id: str) -> str:
     return str(manifest_path)
 
 
-if __name__ == "__main__":
+def main() -> None:
     args = parse_args()
-    run_pipeline(split=args.split, scenario=args.scenario, run_all=args.all)
+    results = run_pipeline(split=args.split, scenario=args.scenario, run_all=args.all)
+
+    try:
+        get_client().flush()
+    except Exception:
+        pass
+    try:
+        langfuse_client.flush()
+    except Exception:
+        pass
+
+    print(f"{len(results)} dataset runs completed.")
+    print("Langfuse flush requested.")
+
+
+if __name__ == "__main__":
+    main()

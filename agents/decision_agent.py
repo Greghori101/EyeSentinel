@@ -22,7 +22,9 @@ class DecisionAgent:
         frame = merged.merge(anomaly_scores, on="transaction_id", how="left")
         frame["economic_weight"] = np.log1p(frame["amount"].clip(lower=0))
         frame["combo_score"] = self._combo_score(frame)
-        frame["type_prior"] = frame.get("transaction_type", "").map(self._transaction_type_prior)
+        frame["type_prior"] = frame.get("transaction_type", "").map(
+            self._transaction_type_prior
+        )
         frame["actor_score"] = self._actor_propagation_score(frame)
         frame["final_score"] = (
             (0.58 * frame["anomaly_score"])
@@ -80,6 +82,9 @@ class DecisionAgent:
         return result
 
     def _target_band(self, reference_profile: dict | None) -> tuple[float, float]:
+        n_rows = int(self.store.metadata.get("n_transactions", 0) or 0)
+        if n_rows and n_rows <= 100:
+            return 0.72, 0.92
         if not reference_profile:
             return 0.50, 0.72
         flagged_ratio = float(
@@ -122,7 +127,9 @@ class DecisionAgent:
         )
 
         phishing_stack = (
-            frame.get("sender_recent_phishing_30d", 0.0).fillna(0.0) >= 0.55
+            (frame.get("sender_recent_phishing_30d", 0.0).fillna(0.0) >= 0.55)
+            | (frame.get("sender_recent_llm_30d", 0.0).fillna(0.0) >= 0.70)
+            | (frame.get("sender_recent_memory_30d", 0.0).fillna(0.0) >= 0.72)
         ) & (
             (frame.get("recipient_is_new", 0.0).fillna(0.0) >= 1.0)
             | (frame.get("transfer_without_iban", 0.0).fillna(0.0) >= 1.0)
@@ -148,8 +155,14 @@ class DecisionAgent:
         description_stack = (frame.get("description_risk", 0.0).fillna(0.0) >= 0.6) & (
             frame.get("sender_recent_short_links", 0.0).fillna(0.0) >= 1.0
         )
+        llm_stack = (
+            (frame.get("sender_recent_llm_30d", 0.0).fillna(0.0) >= 0.75)
+            | (frame.get("sender_recent_message_risk_30d", 0.0).fillna(0.0) >= 0.78)
+        ) & (high_amount >= 0.45)
 
-        return phishing_stack | economic_stack | geo_stack | description_stack
+        return (
+            phishing_stack | economic_stack | geo_stack | description_stack | llm_stack
+        )
 
     def _combo_score(self, frame: pd.DataFrame) -> np.ndarray:
         amount_pressure = self._normalize(frame.get("amount_to_salary", 0.0))
@@ -161,7 +174,11 @@ class DecisionAgent:
         combo = (
             0.20 * frame.get("sender_recent_phishing_7d", 0.0).clip(0, 1)
             + 0.10 * frame.get("sender_recent_phishing_30d", 0.0).clip(0, 1)
+            + 0.10 * frame.get("sender_recent_llm_30d", 0.0).clip(0, 1)
+            + 0.08 * frame.get("sender_recent_memory_30d", 0.0).clip(0, 1)
+            + 0.10 * frame.get("sender_recent_message_risk_30d", 0.0).clip(0, 1)
             + 0.08 * frame.get("recipient_recent_phishing_30d", 0.0).clip(0, 1)
+            + 0.05 * frame.get("recipient_recent_llm_30d", 0.0).clip(0, 1)
             + 0.08 * frame.get("description_risk", 0.0).clip(0, 1)
             + 0.08 * frame.get("transfer_without_iban", 0.0).clip(0, 1)
             + 0.07 * frame.get("inperson_without_location", 0.0).clip(0, 1)
@@ -199,7 +216,9 @@ class DecisionAgent:
         )
 
         sender_signal = actor_frame.groupby("sender_id")["signal"].transform("mean")
-        recipient_signal = actor_frame.groupby("recipient_id")["signal"].transform("mean")
+        recipient_signal = actor_frame.groupby("recipient_id")["signal"].transform(
+            "mean"
+        )
         combined = 0.65 * sender_signal + 0.35 * recipient_signal
         return self._normalize(combined.to_numpy(dtype=float))
 
@@ -218,14 +237,15 @@ class DecisionAgent:
     @staticmethod
     def _choose_percentile(n_rows: int, phishing_signal: pd.Series) -> float:
         if n_rows <= 100:
-            base = 55.0
+            base = 28.0
         elif n_rows <= 500:
             base = 58.0
         else:
             base = 60.0
         if float(phishing_signal.max()) >= 0.8:
             base -= 6.0
-        return float(min(max(base, 45.0), 82.0))
+        floor = 18.0 if n_rows <= 100 else 45.0
+        return float(min(max(base, floor), 82.0))
 
     @staticmethod
     def _normalize(values) -> np.ndarray:

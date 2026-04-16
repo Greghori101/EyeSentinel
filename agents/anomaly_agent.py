@@ -3,6 +3,11 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+try:
+    import networkx as nx
+except Exception:  # pragma: no cover - optional runtime dependency
+    nx = None
+
 from core.feature_store import DatasetBundle, FeatureStore
 
 
@@ -76,12 +81,46 @@ class AnomalyAgent:
         sender_degree = tx.groupby("sender_id")["recipient_id"].nunique().to_dict()
         recipient_degree = tx.groupby("recipient_id")["sender_id"].nunique().to_dict()
         pair_counts = tx.groupby(["sender_id", "recipient_id"]).size().to_dict()
+        components = {}
+        pagerank = {}
+        clustering = {}
+
+        if nx is not None:
+            weighted_edges = (
+                tx.groupby(["sender_id", "recipient_id"])
+                .size()
+                .reset_index(name="weight")
+            )
+            graph = nx.from_pandas_edgelist(
+                weighted_edges,
+                source="sender_id",
+                target="recipient_id",
+                edge_attr="weight",
+                create_using=nx.DiGraph(),
+            )
+            pagerank = (
+                nx.pagerank(graph, weight="weight") if graph.number_of_nodes() else {}
+            )
+            undirected = graph.to_undirected()
+            for component in nx.connected_components(undirected):
+                size = float(len(component))
+                for node in component:
+                    components[node] = size
+            clustering = (
+                nx.clustering(undirected) if undirected.number_of_nodes() else {}
+            )
 
         records: list[dict] = []
         for row in tx.itertuples(index=False):
             out_degree = float(sender_degree.get(row.sender_id, 0))
             in_degree = float(recipient_degree.get(row.recipient_id, 0))
             pair_count = float(pair_counts.get((row.sender_id, row.recipient_id), 0))
+            sender_rank = float(pagerank.get(row.sender_id, 0.0))
+            recipient_rank = float(pagerank.get(row.recipient_id, 0.0))
+            sender_component = float(components.get(row.sender_id, 1.0))
+            recipient_component = float(components.get(row.recipient_id, 1.0))
+            sender_cluster = float(clustering.get(row.sender_id, 0.0))
+            recipient_cluster = float(clustering.get(row.recipient_id, 0.0))
             graph_score = (
                 min(
                     (out_degree / 10.0)
@@ -91,12 +130,23 @@ class AnomalyAgent:
                 )
                 / 3.0
             )
+            graph_score = min(
+                1.0,
+                graph_score
+                + min(sender_rank + recipient_rank, 0.4)
+                + min((sender_component + recipient_component) / 50.0, 0.2)
+                + min(sender_cluster + recipient_cluster, 0.2),
+            )
             records.append(
                 {
                     "transaction_id": row.transaction_id,
                     "sender_out_degree": out_degree,
                     "recipient_in_degree": in_degree,
                     "pair_count": pair_count,
+                    "sender_pagerank": sender_rank,
+                    "recipient_pagerank": recipient_rank,
+                    "sender_component_size": sender_component,
+                    "recipient_component_size": recipient_component,
                     "graph_score": graph_score,
                 }
             )
@@ -144,6 +194,13 @@ class AnomalyAgent:
             "inperson_without_location", 0.0
         ).clip(0, 1)
         components["phishing"] = frame.get("sender_recent_phishing_30d", 0.0).clip(0, 1)
+        components["llm_signal"] = frame.get("sender_recent_llm_30d", 0.0).clip(0, 1)
+        components["memory_signal"] = frame.get("sender_recent_memory_30d", 0.0).clip(
+            0, 1
+        )
+        components["message_risk"] = frame.get(
+            "sender_recent_message_risk_30d", 0.0
+        ).clip(0, 1)
         components["vulnerability"] = frame.get("sender_vulnerability", 0.0).clip(0, 1)
         components["home_gap"] = self._normalize(
             frame.get("sender_recent_gap_hours", 0.0),
@@ -176,6 +233,9 @@ class AnomalyAgent:
                 0.06,
                 0.06,
                 0.06,
+                0.08,
+                0.07,
+                0.08,
                 0.12,
                 0.08,
                 0.06,

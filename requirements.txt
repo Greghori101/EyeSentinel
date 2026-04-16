@@ -1,9 +1,11 @@
 langfuse>=2.0.0
 python-dotenv
-openai
-anthropic
+langchain
+langchain-openai
+ulid-py
 pandas
 numpy
 scikit-learn
 scipy
 geopy
+networkx
