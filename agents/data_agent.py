@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unicodedata
 from collections import Counter
 from pathlib import Path
@@ -26,12 +27,19 @@ def normalize_name(value: str) -> str:
     return normalize_text(value).replace("_", " ")
 
 
+def normalize_key(value: str) -> str:
+    value = normalize_text(value).replace(" ", "_")
+    value = re.sub(r"[^a-z0-9_]+", "_", value)
+    return value.strip("_")
+
+
 class DataIngestionAgent:
     def __init__(self, store: FeatureStore):
         self.store = store
 
     def run(self, config: ScenarioConfig) -> dict:
         transactions = pd.read_csv(config.dataset_dir / "transactions.csv")
+        transactions.columns = [normalize_key(column) for column in transactions.columns]
         transactions["timestamp"] = pd.to_datetime(
             transactions["timestamp"], errors="coerce"
         )
@@ -41,23 +49,29 @@ class DataIngestionAgent:
         transactions["balance_after"] = pd.to_numeric(
             transactions["balance_after"], errors="coerce"
         ).fillna(0.0)
+        transactions = self._normalize_transaction_values(transactions)
         transactions = transactions.sort_values("timestamp").reset_index(drop=True)
 
         users = pd.DataFrame(
             json.loads((config.dataset_dir / "users.json").read_text(encoding="utf-8"))
         )
+        users.columns = [normalize_key(column) for column in users.columns]
         users = self._enrich_users(users)
 
         locations = pd.DataFrame(
-            json.loads(
-                (config.dataset_dir / "locations.json").read_text(encoding="utf-8")
+            self._normalize_records(
+                json.loads(
+                    (config.dataset_dir / "locations.json").read_text(encoding="utf-8")
+                )
             )
         )
         locations["timestamp"] = pd.to_datetime(locations["timestamp"], errors="coerce")
         locations = locations.sort_values("timestamp").reset_index(drop=True)
 
-        sms = json.loads((config.dataset_dir / "sms.json").read_text(encoding="utf-8"))
-        mails = json.loads(
+        sms = self._normalize_records(
+            json.loads((config.dataset_dir / "sms.json").read_text(encoding="utf-8"))
+        )
+        mails = self._normalize_records(
             (config.dataset_dir / "mails.json").read_text(encoding="utf-8")
         )
         audio_events = self._load_audio_events(config.dataset_dir / "audio")
@@ -130,6 +144,54 @@ class DataIngestionAgent:
                 }
             )
         return pd.DataFrame(rows)
+
+    def _normalize_records(self, payload) -> list[dict]:
+        if isinstance(payload, str):
+            payload = json.loads(payload)
+        normalized: list[dict] = []
+        for item in payload or []:
+            if isinstance(item, dict):
+                normalized.append({normalize_key(str(key)): value for key, value in item.items()})
+            else:
+                normalized.append({"value": item})
+        return normalized
+
+    def _normalize_transaction_values(self, transactions: pd.DataFrame) -> pd.DataFrame:
+        transactions = transactions.copy()
+
+        type_map = {
+            "transfer": "bank transfer",
+            "bank transfer": "bank transfer",
+            "bonifico": "bank transfer",
+            "in person payment": "in-person payment",
+            "in-person payment": "in-person payment",
+            "e commerce": "e-commerce",
+            "e-commerce": "e-commerce",
+            "online purchase": "e-commerce",
+            "direct debit": "direct debit",
+            "withdrawal": "withdrawal",
+            "prelievo": "withdrawal",
+        }
+        method_map = {
+            "debit card": "debit card",
+            "mobile phone": "mobile device",
+            "mobile device": "mobile device",
+            "mobile": "mobile device",
+            "smartwatch": "smartwatch",
+            "google pay": "googlepay",
+            "googlepay": "googlepay",
+            "paypal": "paypal",
+            "pay pal": "paypal",
+            "": "",
+        }
+
+        transactions["transaction_type"] = transactions["transaction_type"].fillna("").map(
+            lambda value: type_map.get(normalize_text(value), normalize_text(value))
+        )
+        transactions["payment_method"] = transactions["payment_method"].fillna("").map(
+            lambda value: method_map.get(normalize_text(value), normalize_text(value))
+        )
+        return transactions
 
     def _build_actor_directory(
         self,

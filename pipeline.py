@@ -1,7 +1,11 @@
 from __future__ import annotations
 import argparse
 
-from core.config import OUTPUT_DIR, discover_scenarios, new_session_id
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from core.config import OUTPUT_DIR, ScenarioConfig, discover_scenarios, new_session_id
 from core.feature_store import FeatureStore
 from agents.orchestrator import FraudOrchestrator
 
@@ -32,43 +36,95 @@ def parse_args() -> argparse.Namespace:
 def run_pipeline(
     split: str = "evaluation", scenario: str | None = None, run_all: bool = False
 ) -> list[dict]:
-    session_id = new_session_id()
     print("Reply Mirror Fraud Pipeline")
-    print(f"Session ID: {session_id}\n")
+    print("Session IDs are generated per dataset.\n")
 
-    selected_split = None if run_all else split
-    configs = discover_scenarios(split=selected_split, scenario=scenario)
+    training_refs: dict[str, dict] = {}
     results: list[dict] = []
 
+    if run_all:
+        training_configs = discover_scenarios(split="training", scenario=scenario)
+        evaluation_configs = discover_scenarios(split="evaluation", scenario=scenario)
+
+        for config in training_configs:
+            result, reference_profile = _run_single_config(config)
+            training_refs[config.family_slug] = reference_profile
+            results.append(result)
+
+        for config in evaluation_configs:
+            result, _ = _run_single_config(
+                config,
+                reference_profile=training_refs.get(config.family_slug),
+            )
+            results.append(result)
+        return results
+
+    configs = discover_scenarios(split=split, scenario=scenario)
+    training_lookup = (
+        {config.family_slug: config for config in discover_scenarios(split="training")}
+        if split == "evaluation"
+        else {}
+    )
+
     for config in configs:
-        split_label = "train" if config.split == "training" else "eval"
-        print(f"[{split_label}] dataset={config.scenario_name}")
-        print(f"  session_id:   {session_id}")
-        store = FeatureStore()
-        orchestrator = FraudOrchestrator(store=store, output_dir=OUTPUT_DIR)
-        result = orchestrator.run(config)
-        session_txt_path = _write_session_id_files(
-            config.split, config.slug, session_id
-        )
-        result["session_id"] = session_id
-        result["session_txt_path"] = str(session_txt_path)
+        reference_profile = None
+        if config.split == "evaluation":
+            paired_training = training_lookup.get(config.family_slug)
+            if paired_training is not None:
+                _, reference_profile = _run_single_config(
+                    paired_training,
+                    write_output=False,
+                    write_session=False,
+                    announce=False,
+                )
+        result, _ = _run_single_config(config, reference_profile=reference_profile)
         results.append(result)
-        print(f"  transactions: {result['n_transactions']}")
-        print(f"  flagged:      {result['n_flagged_transactions']}")
-        print(f"  output_txt:   {result['output_path']}")
-        print(f"  session_txt:  {result['session_txt_path']}")
-        print(f"  threshold:    {result['threshold']:.6f}\n")
 
     return results
 
 
-def _write_session_id_files(split: str, slug: str, session_id: str) -> str:
-    split_dir = OUTPUT_DIR / split
-    split_dir.mkdir(parents=True, exist_ok=True)
+def _run_single_config(
+    config: ScenarioConfig,
+    reference_profile: dict | None = None,
+    write_output: bool = True,
+    write_session: bool = True,
+    announce: bool = True,
+) -> tuple[dict, dict | None]:
+    session_id = new_session_id()
+    split_label = "train" if config.split == "training" else "eval"
+    if announce:
+        print(f"[{split_label}] dataset={config.scenario_name}")
+        print(f"  session_id:   {session_id}")
 
-    per_dataset_path = split_dir / f"{slug}_session_id.txt"
-    per_dataset_path.write_text(session_id + "\n", encoding="utf-8")
+    store = FeatureStore()
+    orchestrator = FraudOrchestrator(store=store, output_dir=OUTPUT_DIR)
+    result = orchestrator.run(
+        config,
+        reference_profile=reference_profile,
+        write_output=write_output,
+    )
+    session_manifest_path = ""
+    if write_session:
+        session_manifest_path = str(
+            _write_session_manifest(config.split, config.slug, session_id)
+        )
+    result["session_id"] = session_id
+    result["session_manifest_path"] = session_manifest_path
 
+    if announce:
+        print(f"  transactions: {result['n_transactions']}")
+        print(f"  flagged:      {result['n_flagged_transactions']}")
+        if result["output_path"]:
+            print(f"  output_txt:   {result['output_path']}")
+        if result["session_manifest_path"]:
+            print(f"  session_txt:  {result['session_manifest_path']}")
+        if reference_profile is not None:
+            print("  reference:    paired training profile")
+        print(f"  threshold:    {result['threshold']:.6f}\n")
+    return result, store.reference_profile
+
+
+def _write_session_manifest(split: str, slug: str, session_id: str) -> str:
     manifest_path = OUTPUT_DIR / "session_ids.txt"
     entries: dict[str, str] = {}
     if manifest_path.exists():
@@ -84,7 +140,7 @@ def _write_session_id_files(split: str, slug: str, session_id: str) -> str:
         lines.append(f"{key}: {entries[key]}")
     manifest_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    return str(per_dataset_path)
+    return str(manifest_path)
 
 
 if __name__ == "__main__":

@@ -6,8 +6,11 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 
 BASE_DIR = Path(__file__).parent.parent
+load_dotenv(BASE_DIR / ".env")
 CHALLENGE_DATA_DIR = BASE_DIR / "challenge_data"
 OUTPUT_DIR = BASE_DIR / "outputs"
 DEFAULT_MODEL = os.getenv("LLM_MODEL", "openrouter/elephant-alpha")
@@ -30,11 +33,21 @@ class ScenarioConfig:
         return slugify(self.scenario_name)
 
     @property
+    def family_name(self) -> str:
+        return scenario_family_name(self.scenario_name)
+
+    @property
+    def family_slug(self) -> str:
+        return slugify(self.family_name)
+
+    @property
     def output_path(self) -> Path:
         return OUTPUT_DIR / self.split / f"{self.slug}_predictions.txt"
 
 
-def discover_scenarios(split: str | None = None, scenario: str | None = None) -> list[ScenarioConfig]:
+def discover_scenarios(
+    split: str | None = None, scenario: str | None = None
+) -> list[ScenarioConfig]:
     requested_splits = [split] if split else ["training", "evaluation"]
     configs: list[ScenarioConfig] = []
 
@@ -43,8 +56,14 @@ def discover_scenarios(split: str | None = None, scenario: str | None = None) ->
         if not split_dir.exists():
             continue
 
-        for dataset_dir in sorted(path for path in split_dir.iterdir() if path.is_dir()):
-            if scenario and dataset_dir.name != scenario and slugify(dataset_dir.name) != slugify(scenario):
+        for dataset_dir in sorted(
+            path for path in split_dir.iterdir() if path.is_dir()
+        ):
+            if (
+                scenario
+                and dataset_dir.name != scenario
+                and slugify(dataset_dir.name) != slugify(scenario)
+            ):
                 continue
             configs.append(
                 ScenarioConfig(
@@ -59,6 +78,12 @@ def discover_scenarios(split: str | None = None, scenario: str | None = None) ->
             f"No datasets found for split={split!r} scenario={scenario!r} under {CHALLENGE_DATA_DIR}"
         )
     return configs
+
+
+def scenario_family_name(value: str) -> str:
+    value = value.strip()
+    value = re.sub(r"\s*-\s*(train|validation)\s*$", "", value, flags=re.IGNORECASE)
+    return value.strip()
 
 
 def new_session_id() -> str:

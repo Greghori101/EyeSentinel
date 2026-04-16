@@ -90,11 +90,11 @@ class CommunicationAgent:
     ) -> pd.DataFrame:
         rows: list[dict] = []
         for payload in sms:
-            text = payload.get("sms", "")
-            rows.append(self._message_row(text, "sms", actor_ids_by_name))
+            text = payload.get("sms") or payload.get("message") or payload.get("value") or ""
+            rows.append(self._message_row(text, "sms", actor_ids_by_name, payload))
         for payload in mails:
-            text = payload.get("mail", "")
-            rows.append(self._message_row(text, "mail", actor_ids_by_name))
+            text = payload.get("mail") or payload.get("message") or payload.get("value") or ""
+            rows.append(self._message_row(text, "mail", actor_ids_by_name, payload))
         return pd.DataFrame(rows)
 
     def _message_row(
@@ -102,9 +102,10 @@ class CommunicationAgent:
         text: str,
         source: str,
         actor_ids_by_name: dict[str, dict[str, list[str]]],
+        payload: dict,
     ) -> dict:
         normalized_text = normalize_text(text)
-        actor_ids = self._match_actor_ids(text, normalized_text, actor_ids_by_name)
+        actor_ids = self._match_actor_ids(text, normalized_text, actor_ids_by_name, payload)
         date_match = DATE_RE.search(text)
         timestamp = (
             self._coerce_timestamp(date_match.group(1)) if date_match else pd.NaT
@@ -126,8 +127,12 @@ class CommunicationAgent:
         text: str,
         normalized_text: str,
         actor_ids_by_name: dict[str, dict[str, list[str]]],
+        payload: dict,
     ) -> list[str]:
         matched: set[str] = set()
+        explicit_user_id = payload.get("user_id") or payload.get("user") or payload.get("biotag")
+        if explicit_user_id:
+            matched.add(str(explicit_user_id))
         to_match = TO_RE.search(text)
         if to_match:
             name = normalize_name(to_match.group(1))

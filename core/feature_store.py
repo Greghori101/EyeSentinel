@@ -27,6 +27,7 @@ class FeatureStore:
     merged_features: pd.DataFrame | None = None
     anomaly_scores: pd.DataFrame | None = None
     predictions: pd.DataFrame | None = None
+    reference_profile: dict[str, Any] | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def set_bundle(self, bundle: DatasetBundle) -> None:
@@ -47,7 +48,9 @@ class FeatureStore:
         for frame in frames[1:]:
             merged = merged.merge(frame, on=key, how="left")
 
-        numeric_columns = merged.select_dtypes(include=["number", "bool"]).columns.tolist()
+        numeric_columns = merged.select_dtypes(
+            include=["number", "bool"]
+        ).columns.tolist()
         if numeric_columns:
             merged[numeric_columns] = merged[numeric_columns].fillna(0.0)
         merged = merged.fillna("")

@@ -10,7 +10,12 @@ class AnomalyAgent:
     def __init__(self, store: FeatureStore):
         self.store = store
 
-    def run(self, bundle: DatasetBundle, merged: pd.DataFrame) -> pd.DataFrame:
+    def run(
+        self,
+        bundle: DatasetBundle,
+        merged: pd.DataFrame,
+        reference_profile: dict | None = None,
+    ) -> pd.DataFrame:
         frame = merged.copy()
         graph = self._graph_features(bundle.transactions)
         frame = frame.merge(graph, on="transaction_id", how="left").fillna(0.0)
@@ -23,11 +28,11 @@ class AnomalyAgent:
         numeric = numeric.replace([np.inf, -np.inf], 0.0).fillna(0.0)
 
         if len(frame) >= 3:
-            isolation_score = self._unsupervised_score(numeric)
+            isolation_score = self._unsupervised_score(numeric, reference_profile)
         else:
             isolation_score = np.zeros(len(frame), dtype=float)
 
-        rule_score = self._build_rule_score(frame)
+        rule_score = self._build_rule_score(frame, reference_profile)
         anomaly_score = 0.55 * rule_score + 0.45 * isolation_score
 
         result = pd.DataFrame(
@@ -42,11 +47,18 @@ class AnomalyAgent:
         self.store.anomaly_scores = result
         return result
 
-    def _unsupervised_score(self, numeric: pd.DataFrame) -> np.ndarray:
+    def _unsupervised_score(
+        self,
+        numeric: pd.DataFrame,
+        reference_profile: dict | None = None,
+    ) -> np.ndarray:
         normalized_columns: list[np.ndarray] = []
         for column in numeric.columns:
+            low, high = self._reference_bounds(reference_profile, column)
             normalized_columns.append(
-                self._normalize(numeric[column].to_numpy(dtype=float))
+                self._normalize(
+                    numeric[column].to_numpy(dtype=float), low=low, high=high
+                )
             )
 
         matrix = (
@@ -90,21 +102,38 @@ class AnomalyAgent:
             )
         return pd.DataFrame(records)
 
-    def _build_rule_score(self, frame: pd.DataFrame) -> np.ndarray:
+    def _build_rule_score(
+        self,
+        frame: pd.DataFrame,
+        reference_profile: dict | None = None,
+    ) -> np.ndarray:
         components = pd.DataFrame(index=frame.index)
-        components["amount"] = self._normalize(frame.get("log_amount", 0.0))
+        components["amount"] = self._normalize(
+            frame.get("log_amount", 0.0),
+            *self._reference_bounds(reference_profile, "log_amount"),
+        )
         components["amount_to_salary"] = self._normalize(
-            frame.get("amount_to_salary", 0.0)
+            frame.get("amount_to_salary", 0.0),
+            *self._reference_bounds(reference_profile, "amount_to_salary"),
         )
         components["balance_pressure"] = self._normalize(
-            frame.get("balance_pressure", 0.0)
+            frame.get("balance_pressure", 0.0),
+            *self._reference_bounds(reference_profile, "balance_pressure"),
         )
         components["amount_dev"] = self._normalize(
-            frame.get("sender_amount_deviation", 0.0)
+            frame.get("sender_amount_deviation", 0.0),
+            *self._reference_bounds(reference_profile, "sender_amount_deviation"),
         )
-        components["velocity"] = self._normalize(frame.get("sender_rolling_24h", 0.0))
+        components["velocity"] = self._normalize(
+            frame.get("sender_rolling_24h", 0.0),
+            *self._reference_bounds(reference_profile, "sender_rolling_24h"),
+        )
         components["type_rarity"] = frame.get("sender_type_rarity", 0.0).clip(0, 1)
         components["method_rarity"] = frame.get("sender_method_rarity", 0.0).clip(0, 1)
+        components["type_baseline"] = frame.get("type_baseline_risk", 0.0).clip(0, 1)
+        components["method_baseline"] = frame.get("method_baseline_risk", 0.0).clip(
+            0, 1
+        )
         components["new_recipient"] = frame.get("recipient_is_new", 0.0).clip(0, 1)
         components["night"] = frame.get("is_night", 0.0).clip(0, 1)
         components["description"] = frame.get("description_risk", 0.0).clip(0, 1)
@@ -117,12 +146,19 @@ class AnomalyAgent:
         components["phishing"] = frame.get("sender_recent_phishing_30d", 0.0).clip(0, 1)
         components["vulnerability"] = frame.get("sender_vulnerability", 0.0).clip(0, 1)
         components["home_gap"] = self._normalize(
-            frame.get("sender_recent_gap_hours", 0.0)
+            frame.get("sender_recent_gap_hours", 0.0),
+            *self._reference_bounds(reference_profile, "sender_recent_gap_hours"),
         )
         components["distance"] = self._normalize(
-            frame.get("sender_recent_distance_from_home", 0.0)
+            frame.get("sender_recent_distance_from_home", 0.0),
+            *self._reference_bounds(
+                reference_profile, "sender_recent_distance_from_home"
+            ),
         )
-        components["audio"] = self._normalize(frame.get("sender_audio_30d", 0.0))
+        components["audio"] = self._normalize(
+            frame.get("sender_audio_30d", 0.0),
+            *self._reference_bounds(reference_profile, "sender_audio_30d"),
+        )
         components["graph"] = frame.get("graph_score", 0.0).clip(0, 1)
         weights = np.array(
             [
@@ -134,6 +170,8 @@ class AnomalyAgent:
                 0.07,
                 0.05,
                 0.05,
+                0.04,
+                0.04,
                 0.05,
                 0.06,
                 0.06,
@@ -150,12 +188,28 @@ class AnomalyAgent:
         return weighted.sum(axis=1)
 
     @staticmethod
-    def _normalize(values) -> np.ndarray:
+    def _normalize(
+        values, low: float | None = None, high: float | None = None
+    ) -> np.ndarray:
         arr = np.asarray(values, dtype=float)
         if arr.size == 0:
             return arr
-        low = np.nanpercentile(arr, 5)
-        high = np.nanpercentile(arr, 95)
+        if low is None:
+            low = np.nanpercentile(arr, 5)
+        if high is None:
+            high = np.nanpercentile(arr, 95)
         if not np.isfinite(low) or not np.isfinite(high) or high <= low:
             return np.zeros_like(arr)
         return np.clip((arr - low) / (high - low), 0.0, 1.0)
+
+    @staticmethod
+    def _reference_bounds(
+        reference_profile: dict | None,
+        column: str,
+    ) -> tuple[float | None, float | None]:
+        if not reference_profile:
+            return None, None
+        bounds = reference_profile.get("feature_ranges", {}).get(column)
+        if not bounds:
+            return None, None
+        return float(bounds[0]), float(bounds[1])
