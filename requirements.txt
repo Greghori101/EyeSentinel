@@ -8,4 +8,4 @@ numpy
 scikit-learn
 scipy
 geopy
-networkx
+networkx>=3.0,<4.0
